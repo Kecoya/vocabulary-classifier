@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语词汇分类学习工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .upload-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .file-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .file-input-label {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .file-input-label:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .file-info {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .words-section {
+            padding: 30px;
+            min-height: 400px;
+        }
+        
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .word-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .word-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #dc3545, #c82333);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .word-card.selected {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .word-card.selected::before {
+            transform: scaleX(1);
+        }
+        
+        .word-text {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .word-index {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 30px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        .instruction-hint {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 30px;
+            border: 1px solid #ffeaa7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instruction-hint.hide {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .words-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 英语词汇分类学习工具</h1>
+            <p>高效整理你的词汇库，针对性提升英语水平</p>
+        </header>
+        
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <label for="fileInput" class="file-input-label">
+                    📁 选择词汇文件
+                </label>
+                <input type="file" id="fileInput" accept=".txt">
+                <span class="file-info" id="fileInfo">请选择一个包含英语词汇的txt文件</span>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">总词汇数</div>
+                    <div class="stat-value" id="totalWords">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">已显示</div>
+                    <div class="stat-value" id="displayedWords">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">不懂的</div>
+                    <div class="stat-value" id="unknownWords">0</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <div class="instruction-hint" id="instructionHint">
+            💡 <strong>使用提示：</strong>点击选中不懂的单词，然后点击"标记为不懂"。未选中的单词自动归为"懂"。
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="words-section" id="wordsSection">
+            <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h3>还没有加载词汇</h3>
+                <p>请先选择一个词汇文件开始学习</p>
+            </div>
+            
+            <div class="words-grid" id="wordsGrid" style="display: none;"></div>
+            
+            <div class="controls" id="controls" style="display: none;">
+                <button class="btn btn-danger" id="markUnknown">
+                    ✗ 标记为不懂
+                </button>
+                <button class="btn btn-success" id="nextBatch">
+                    → 下一组
+                </button>
+                <button class="btn btn-info" id="exportNow">
+                    💾 立即导出文件
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VocabularyClassifier {
+            constructor() {
+                this.allWords = [];
+                this.remainingWords = []; // 未显示的词汇池
+                this.displayedWords = []; // 已显示过的词汇
+                this.currentBatch = [];
+                this.selectedWords = new Set();
+                this.unknownWords = []; // 不懂的单词
+                this.knownWords = []; // 懂的单词
+                this.batchSize = 10;
+                
+                this.initializeElements();
+                this.attachEventListeners();
+            }
+            
+            initializeElements() {
+                this.fileInput = document.getElementById('fileInput');
+                this.fileInfo = document.getElementById('fileInfo');
+                this.totalWordsEl = document.getElementById('totalWords');
+                this.displayedWordsEl = document.getElementById('displayedWords');
+                this.unknownWordsEl = document.getElementById('unknownWords');
+                this.progressFill = document.getElementById('progressFill');
+                this.wordsGrid = document.getElementById('wordsGrid');
+                this.emptyState = document.getElementById('emptyState');
+                this.controls = document.getElementById('controls');
+                this.message = document.getElementById('message');
+                this.instructionHint = document.getElementById('instructionHint');
+                
+                this.markUnknownBtn = document.getElementById('markUnknown');
+                this.nextBatchBtn = document.getElementById('nextBatch');
+                this.exportNowBtn = document.getElementById('exportNow');
+            }
+            
+            attachEventListeners() {
+                this.fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
+                this.markUnknownBtn.addEventListener('click', () => this.markWordsAsUnknown());
+                this.nextBatchBtn.addEventListener('click', () => this.skipCurrentBatch());
+                this.exportNowBtn.addEventListener('click', () => this.exportCurrentProgress());
+            }
+            
+            // Fisher-Yates 洗牌算法
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            async handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!file.name.endsWith('.txt')) {
+                    this.showMessage('请选择txt格式的文件', 'error');
+                    return;
+                }
+                
+                try {
+                    const text = await file.text();
+                    const words = text.split('\n')
+                        .map(word => word.trim())
+                        .filter(word => word.length > 0);
+                    
+                    if (words.length === 0) {
+                        this.showMessage('文件中没有找到有效的词汇', 'error');
+                        return;
+                    }
+                    
+                    this.allWords = words;
+                    // 初始化时打乱所有词汇
+                    this.remainingWords = this.shuffleArray(words);
+                    this.displayedWords = [];
+                    this.knownWords = [];
+                    this.unknownWords = [];
+                    this.selectedWords.clear();
+                    
+                    this.fileInfo.textContent = `已加载: ${file.name} (${words.length} 个词汇)`;
+                    this.updateStats();
+                    this.loadNextBatch();
+                    
+                    // 显示使用提示
+                    this.instructionHint.classList.remove('hide');
+                    
+                    this.showMessage(`成功加载 ${words.length} 个词汇，已随机排序`, 'success');
+                } catch (error) {
+                    this.showMessage('文件读取失败，请重试', 'error');
+                    console.error('File reading error:', error);
+                }
+            }
+            
+            loadNextBatch() {
+                if (this.remainingWords.length === 0) {
+                    this.finishClassification();
+                    return;
+                }
+                
+                // 从剩余词汇中随机抽取一批
+                const batchSize = Math.min(this.batchSize, this.remainingWords.length);
+                this.currentBatch = this.remainingWords.splice(0, batchSize);
+                
+                // 将当前批次添加到已显示列表
+                this.displayedWords.push(...this.currentBatch);
+                
+                this.displayWords();
+                this.updateStats();
+                
+                this.emptyState.style.display = 'none';
+                this.wordsGrid.style.display = 'grid';
+                this.controls.style.display = 'flex';
+                
+                // 隐藏使用提示
+                this.instructionHint.classList.add('hide');
+            }
+            
+            displayWords() {
+                this.wordsGrid.innerHTML = '';
+                
+                this.currentBatch.forEach((word, index) => {
+                    const wordCard = document.createElement('div');
+                    wordCard.className = 'word-card';
+                    wordCard.dataset.word = word;
+                    
+                    // 显示在原始列表中的位置
+                    const originalIndex = this.allWords.indexOf(word) + 1;
+                    
+                    wordCard.innerHTML = `
+                        <div class="word-index">#${originalIndex}</div>
+                        <div class="word-text">${word}</div>
+                    `;
+                    
+                    wordCard.addEventListener('click', () => this.toggleWordSelection(word, wordCard));
+                    this.wordsGrid.appendChild(wordCard);
+                });
+            }
+            
+            toggleWordSelection(word, element) {
+                if (this.selectedWords.has(word)) {
+                    this.selectedWords.delete(word);
+                    element.classList.remove('selected');
+                } else {
+                    this.selectedWords.add(word);
+                    element.classList.add('selected');
+                }
+            }
+            
+            markWordsAsUnknown() {
+                // 保存当前选中的单词数量
+                const selectedCount = this.selectedWords.size;
+                
+                if (selectedCount === 0) {
+                    this.showMessage('请先选择不懂的词汇', 'error');
+                    return;
+                }
+                
+                // 将选中的单词标记为不懂
+                this.selectedWords.forEach(word => {
+                    this.unknownWords.push(word);
+                });
+                
+                // 未选中的单词自动归为懂
+                this.currentBatch.forEach(word => {
+                    if (!this.selectedWords.has(word)) {
+                        this.knownWords.push(word);
+                    }
+                });
+                
+                // 清空选中状态，准备加载下一批
+                this.selectedWords.clear();
+                
+                // 加载下一批
+                this.loadNextBatch();
+                
+                this.showMessage(`已标记 ${selectedCount} 个不懂的词汇，其余自动归为懂`, 'success');
+            }
+            
+            skipCurrentBatch() {
+                // 如果当前批次有选中的单词，先处理它们
+                if (this.selectedWords.size > 0) {
+                    this.markWordsAsUnknown();
+                } else {
+                    // 如果没有选中任何单词，将当前批次全部归为懂
+                    this.currentBatch.forEach(word => {
+                        this.knownWords.push(word);
+                    });
+                    
+                    // 清空选中状态，准备加载下一批
+                    this.selectedWords.clear();
+                    
+                    // 加载下一批
+                    this.loadNextBatch();
+                    
+                    this.showMessage(`已将 ${this.currentBatch.length} 个词汇自动归为懂`, 'success');
+                }
+            }
+            
+            updateStats() {
+                const total = this.allWords.length;
+                const displayed = this.displayedWords.length;
+                const unknown = this.unknownWords.length;
+                
+                this.totalWordsEl.textContent = total;
+                this.displayedWordsEl.textContent = displayed;
+                this.unknownWordsEl.textContent = unknown;
+                
+                const progress = total > 0 ? (displayed / total) * 100 : 0;
+                this.progressFill.style.width = `${progress}%`;
+            }
+            
+            exportCurrentProgress() {
+                // 计算真正剩余的词汇（未显示的）
+                const finalRemainingWords = this.allWords.filter(word => 
+                    !this.displayedWords.includes(word)
+                );
+                
+                this.downloadFiles(finalRemainingWords);
+                
+                this.showMessage(`已导出：懂(${this.knownWords.length}) 不懂(${this.unknownWords.length}) 剩余(${finalRemainingWords.length})`, 'success');
+            }
+            
+            finishClassification() {
+                this.wordsGrid.style.display = 'none';
+                this.controls.style.display = 'none';
+                
+                // 处理最后一批未标记的单词
+                if (this.currentBatch.length > 0) {
+                    // 如果最后一批有选中的单词，先处理它们
+                    if (this.selectedWords.size > 0) {
+                        this.selectedWords.forEach(word => {
+                            this.unknownWords.push(word);
+                        });
+                        
+                        this.currentBatch.forEach(word => {
+                            if (!this.selectedWords.has(word)) {
+                                this.knownWords.push(word);
+                            }
+                        });
+                    } else {
+                        // 如果没有选中任何单词，将当前批次全部归为懂
+                        this.currentBatch.forEach(word => {
+                            this.knownWords.push(word);
+                        });
+                    }
+                }
+                
+                const finalRemainingWords = [];
+                
+                this.downloadFiles(finalRemainingWords);
+                
+                this.emptyState.style.display = 'block';
+                this.emptyState.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h3>🎉 分类完成！</h3>
+                    <p>已显示 ${this.displayedWords.length} 个词汇</p>
+                    <p>懂: ${this.knownWords.length} | 不懂: ${this.unknownWords.length}</p>
+                    <p>文件已自动下载到你的下载文件夹</p>
+                    <button class="btn btn-info" onclick="location.reload()" style="margin-top: 20px;">
+                        🔄 重新开始
+                    </button>
+                `;
+            }
+            
+            downloadFiles(remainingWords) {
+                // 下载懂的词汇
+                if (this.knownWords.length > 0) {
+                    this.downloadTextFile(this.knownWords.join('\n'), 'known_words.txt');
+                }
+                
+                // 下载不懂的词汇
+                if (this.unknownWords.length > 0) {
+                    this.downloadTextFile(this.unknownWords.join('\n'), 'unknown_words.txt');
+                }
+                
+                // 下载删去所有显示单词后的词汇
+                if (remainingWords.length > 0) {
+                    this.downloadTextFile(remainingWords.join('\n'), 'remaining_words.txt');
+                } else {
+                    this.downloadTextFile('', 'remaining_words.txt');
+                }
+            }
+            
+            downloadTextFile(content, filename) {
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+            
+            showMessage(text, type) {
+                this.message.textContent = text;
+                this.message.className = `message ${type} show`;
+                
+                setTimeout(() => {
+                    this.message.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new VocabularyClassifier();
+        });
+    </script>
+</body>
+</html>
