@@ -330,7 +330,7 @@
     <div class="container">
         <header>
             <h1>📚 英语词汇分类学习工具</h1>
-            <p>高效整理你的词汇库，针对性提升英语水平</p>
+            <p>支持导入已认识词汇，智能筛选需要学习的单词，持续积累词汇量</p>
         </header>
         
         <div class="upload-section">
@@ -341,6 +341,14 @@
                 <input type="file" id="fileInput" accept=".txt">
                 <span class="file-info" id="fileInfo">请选择一个包含英语词汇的txt文件</span>
             </div>
+
+            <div class="file-input-wrapper" style="margin-top: 15px;">
+                <label for="knownWordsInput" class="file-input-label" style="background: #28a745;">
+                    ✓ 选择已认识单词文件（可选）
+                </label>
+                <input type="file" id="knownWordsInput" accept=".txt">
+                <span class="file-info" id="knownWordsInfo">可选择已有的已认识单词文件进行合并</span>
+            </div>
             
             <div class="stats">
                 <div class="stat-item">
@@ -348,8 +356,16 @@
                     <div class="stat-value" id="totalWords">0</div>
                 </div>
                 <div class="stat-item">
+                    <div class="stat-label">原有已认识</div>
+                    <div class="stat-value" id="existingKnownWords">0</div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-label">已显示</div>
                     <div class="stat-value" id="displayedWords">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">新认识</div>
+                    <div class="stat-value" id="newKnownWords">0</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">不懂的</div>
@@ -363,7 +379,7 @@
         </div>
         
         <div class="instruction-hint" id="instructionHint">
-            💡 <strong>使用提示：</strong>点击选中不懂的单词，然后点击"标记为不懂"。未选中的单词自动归为"懂"。
+            💡 <strong>使用提示：</strong>点击选中不懂的单词，然后点击"标记为不懂"。未选中的单词自动归为"新认识"。最终导出时，新认识单词会与原有已认识单词合并。
         </div>
         
         <div class="message" id="message"></div>
@@ -402,26 +418,31 @@
                 this.currentBatch = [];
                 this.selectedWords = new Set();
                 this.unknownWords = []; // 不懂的单词
-                this.knownWords = []; // 懂的单词
+                this.knownWords = []; // 新懂的单词（本次学习中认识的）
+                this.existingKnownWords = []; // 原有已认识的单词
                 this.batchSize = 10;
-                
+
                 this.initializeElements();
                 this.attachEventListeners();
             }
             
             initializeElements() {
                 this.fileInput = document.getElementById('fileInput');
+                this.knownWordsInput = document.getElementById('knownWordsInput');
                 this.fileInfo = document.getElementById('fileInfo');
+                this.knownWordsInfo = document.getElementById('knownWordsInfo');
                 this.totalWordsEl = document.getElementById('totalWords');
                 this.displayedWordsEl = document.getElementById('displayedWords');
                 this.unknownWordsEl = document.getElementById('unknownWords');
+                this.existingKnownWordsEl = document.getElementById('existingKnownWords');
+                this.newKnownWordsEl = document.getElementById('newKnownWords');
                 this.progressFill = document.getElementById('progressFill');
                 this.wordsGrid = document.getElementById('wordsGrid');
                 this.emptyState = document.getElementById('emptyState');
                 this.controls = document.getElementById('controls');
                 this.message = document.getElementById('message');
                 this.instructionHint = document.getElementById('instructionHint');
-                
+
                 this.markUnknownBtn = document.getElementById('markUnknown');
                 this.nextBatchBtn = document.getElementById('nextBatch');
                 this.exportNowBtn = document.getElementById('exportNow');
@@ -429,6 +450,7 @@
             
             attachEventListeners() {
                 this.fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
+                this.knownWordsInput.addEventListener('change', (e) => this.handleKnownWordsFile(e));
                 this.markUnknownBtn.addEventListener('click', () => this.markWordsAsUnknown());
                 this.nextBatchBtn.addEventListener('click', () => this.skipCurrentBatch());
                 this.exportNowBtn.addEventListener('click', () => this.exportCurrentProgress());
@@ -444,42 +466,79 @@
                 return shuffled;
             }
             
-            async handleFileUpload(event) {
+            async handleKnownWordsFile(event) {
                 const file = event.target.files[0];
-                if (!file) return;
-                
-                if (!file.name.endsWith('.txt')) {
-                    this.showMessage('请选择txt格式的文件', 'error');
+                if (!file) {
+                    this.existingKnownWords = [];
+                    this.knownWordsInfo.textContent = '可选择已有的已认识单词文件进行合并';
+                    this.updateStats();
                     return;
                 }
-                
+
+                if (!file.name.endsWith('.txt')) {
+                    this.showMessage('请选择txt格式的已认识单词文件', 'error');
+                    return;
+                }
+
                 try {
                     const text = await file.text();
                     const words = text.split('\n')
                         .map(word => word.trim())
                         .filter(word => word.length > 0);
-                    
+
+                    this.existingKnownWords = words;
+                    this.knownWordsInfo.textContent = `已加载: ${file.name} (${words.length} 个已认识词汇)`;
+                    this.updateStats();
+                    this.showMessage(`成功加载 ${words.length} 个已认识词汇`, 'success');
+                } catch (error) {
+                    this.showMessage('已认识单词文件读取失败，请重试', 'error');
+                    console.error('Known words file reading error:', error);
+                }
+            }
+
+            async handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (!file.name.endsWith('.txt')) {
+                    this.showMessage('请选择txt格式的文件', 'error');
+                    return;
+                }
+
+                try {
+                    const text = await file.text();
+                    const words = text.split('\n')
+                        .map(word => word.trim())
+                        .filter(word => word.length > 0);
+
                     if (words.length === 0) {
                         this.showMessage('文件中没有找到有效的词汇', 'error');
                         return;
                     }
-                    
+
                     this.allWords = words;
-                    // 初始化时打乱所有词汇
-                    this.remainingWords = this.shuffleArray(words);
+
+                    // 过滤掉原有已认识的单词，只保留需要学习的词汇
+                    const wordsToLearn = words.filter(word => !this.existingKnownWords.includes(word));
+
+                    // 初始化时打乱待学习词汇
+                    this.remainingWords = this.shuffleArray(wordsToLearn);
                     this.displayedWords = [];
-                    this.knownWords = [];
+                    this.knownWords = []; // 本次新认识的单词
                     this.unknownWords = [];
                     this.selectedWords.clear();
-                    
-                    this.fileInfo.textContent = `已加载: ${file.name} (${words.length} 个词汇)`;
+
+                    this.fileInfo.textContent = `已加载: ${file.name} (${words.length} 个词汇，需要学习 ${wordsToLearn.length} 个)`;
                     this.updateStats();
-                    this.loadNextBatch();
-                    
+
+                    if (wordsToLearn.length > 0) {
+                        this.loadNextBatch();
+                    } else {
+                        this.showMessage('所有词汇都已标记为认识，无需学习', 'success');
+                    }
+
                     // 显示使用提示
                     this.instructionHint.classList.remove('hide');
-                    
-                    this.showMessage(`成功加载 ${words.length} 个词汇，已随机排序`, 'success');
                 } catch (error) {
                     this.showMessage('文件读取失败，请重试', 'error');
                     console.error('File reading error:', error);
@@ -593,32 +652,38 @@
             
             updateStats() {
                 const total = this.allWords.length;
+                const existingKnown = this.existingKnownWords.length;
                 const displayed = this.displayedWords.length;
+                const newKnown = this.knownWords.length;
                 const unknown = this.unknownWords.length;
-                
+
                 this.totalWordsEl.textContent = total;
+                this.existingKnownWordsEl.textContent = existingKnown;
                 this.displayedWordsEl.textContent = displayed;
+                this.newKnownWordsEl.textContent = newKnown;
                 this.unknownWordsEl.textContent = unknown;
-                
-                const progress = total > 0 ? (displayed / total) * 100 : 0;
+
+                // 计算学习进度（基于待学习的词汇）
+                const wordsToLearn = total - existingKnown;
+                const progress = wordsToLearn > 0 ? (displayed / wordsToLearn) * 100 : 100;
                 this.progressFill.style.width = `${progress}%`;
             }
             
             exportCurrentProgress() {
                 // 计算真正剩余的词汇（未显示的）
-                const finalRemainingWords = this.allWords.filter(word => 
-                    !this.displayedWords.includes(word)
+                const finalRemainingWords = this.allWords.filter(word =>
+                    !this.displayedWords.includes(word) && !this.existingKnownWords.includes(word)
                 );
-                
-                this.downloadFiles(finalRemainingWords);
-                
-                this.showMessage(`已导出：懂(${this.knownWords.length}) 不懂(${this.unknownWords.length}) 剩余(${finalRemainingWords.length})`, 'success');
+
+                const allKnownCount = this.downloadFiles(finalRemainingWords);
+
+                this.showMessage(`已导出：总认识(${allKnownCount}) 原有(${this.existingKnownWords.length}) 新认识(${this.knownWords.length}) 不懂(${this.unknownWords.length}) 剩余(${finalRemainingWords.length})`, 'success');
             }
             
             finishClassification() {
                 this.wordsGrid.style.display = 'none';
                 this.controls.style.display = 'none';
-                
+
                 // 处理最后一批未标记的单词
                 if (this.currentBatch.length > 0) {
                     // 如果最后一批有选中的单词，先处理它们
@@ -626,7 +691,7 @@
                         this.selectedWords.forEach(word => {
                             this.unknownWords.push(word);
                         });
-                        
+
                         this.currentBatch.forEach(word => {
                             if (!this.selectedWords.has(word)) {
                                 this.knownWords.push(word);
@@ -639,11 +704,10 @@
                         });
                     }
                 }
-                
+
                 const finalRemainingWords = [];
-                
-                this.downloadFiles(finalRemainingWords);
-                
+                const allKnownCount = this.downloadFiles(finalRemainingWords);
+
                 this.emptyState.style.display = 'block';
                 this.emptyState.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -651,7 +715,8 @@
                     </svg>
                     <h3>🎉 分类完成！</h3>
                     <p>已显示 ${this.displayedWords.length} 个词汇</p>
-                    <p>懂: ${this.knownWords.length} | 不懂: ${this.unknownWords.length}</p>
+                    <p>原有已认识: ${this.existingKnownWords.length} | 新认识: ${this.knownWords.length} | 不懂: ${this.unknownWords.length}</p>
+                    <p>总计已认识: ${allKnownCount} 个词汇</p>
                     <p>文件已自动下载到你的下载文件夹</p>
                     <button class="btn btn-info" onclick="location.reload()" style="margin-top: 20px;">
                         🔄 重新开始
@@ -660,22 +725,28 @@
             }
             
             downloadFiles(remainingWords) {
-                // 下载懂的词汇
-                if (this.knownWords.length > 0) {
-                    this.downloadTextFile(this.knownWords.join('\n'), 'known_words.txt');
+                // 合并原有已认识单词和新认识的单词，并去重
+                const allKnownWords = [...new Set([...this.existingKnownWords, ...this.knownWords])];
+
+                // 下载所有认识的词汇（包含原有的和本次新认识的）
+                if (allKnownWords.length > 0) {
+                    this.downloadTextFile(allKnownWords.join('\n'), 'known_words.txt');
                 }
-                
+
                 // 下载不懂的词汇
                 if (this.unknownWords.length > 0) {
                     this.downloadTextFile(this.unknownWords.join('\n'), 'unknown_words.txt');
                 }
-                
+
                 // 下载删去所有显示单词后的词汇
                 if (remainingWords.length > 0) {
                     this.downloadTextFile(remainingWords.join('\n'), 'remaining_words.txt');
                 } else {
                     this.downloadTextFile('', 'remaining_words.txt');
                 }
+
+                // 返回合并后的已认识词汇数量用于提示
+                return allKnownWords.length;
             }
             
             downloadTextFile(content, filename) {
