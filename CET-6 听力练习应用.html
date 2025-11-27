@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0163)file:///D:/DESKTOP/%E5%AD%A6%E6%9C%AF/%E7%A0%94%E7%A9%B6/%E3%80%90code%E3%80%91/%E7%AD%9B%E9%80%89%E4%B8%8D%E6%87%82%E7%9A%84%E5%8D%95%E8%AF%8D/cet6-listening.html -->
-<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CET-6 听力练习应用</title>
     <style>
@@ -15,8 +15,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
                 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
                 sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -41,9 +39,37 @@
             margin-bottom: 10px;
         }
 
-        .header-info {
+        .file-input-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .file-input-group {
+            margin-bottom: 20px;
+        }
+
+        .file-input-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
             font-size: 16px;
-            opacity: 0.9;
+            background: white;
+        }
+
+        .file-input:focus {
+            border-color: #2196f3;
+            outline: none;
         }
 
         .main-content {
@@ -52,6 +78,7 @@
             padding: 30px;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            display: none;
         }
 
         .exercise-title {
@@ -392,22 +419,11 @@
             color: #424242;
         }
 
-        .word {
-            cursor: pointer;
+        .word-highlight {
+            background: rgba(255, 193, 7, 0.5);
             padding: 2px 4px;
             border-radius: 3px;
-            transition: all 0.2s ease;
-        }
-
-        .word:hover {
-            background: rgba(33, 150, 243, 0.1);
-            color: #1976d2;
-        }
-
-        .word.mastered {
-            background: rgba(76, 175, 80, 0.1);
-            color: #2e7d32;
-            border-bottom: 2px solid #4caf50;
+            font-weight: 600;
         }
 
         .questions-content {
@@ -561,6 +577,7 @@
             border-top: 2px solid #e9ecef;
             padding-top: 20px;
             text-align: center;
+            display: none;
         }
 
         .score-display {
@@ -668,6 +685,10 @@
                 padding: 20px;
             }
 
+            .file-input-section {
+                padding: 20px;
+            }
+
             .audio-main-controls {
                 flex-direction: column;
                 align-items: stretch;
@@ -694,12 +715,29 @@
             </div>
         </header>
 
-        <div class="main-content">
-            <div class="exercise-title">Crisis Management</div>
+        <!-- 文件输入区域 -->
+        <div class="file-input-section">
+            <h2>📂 数据输入</h2>
+            <div class="file-input-group">
+                <label for="jsonFileInput">📄 听力JSON数据文件：</label>
+                <input type="file" id="jsonFileInput" class="file-input" accept=".json,.txt" />
+            </div>
+            <div class="file-input-group">
+                <label for="wordsFileInput">📝 单词列表文件（可选）：</label>
+                <input type="file" id="wordsFileInput" class="file-input" accept=".txt" />
+            </div>
+            <div id="loadingIndicator" style="display: none; color: #2196f3; margin-top: 10px;">
+                正在加载数据...
+            </div>
+        </div>
 
-            <div class="context-box">
+        <!-- 主要内容区域（初始隐藏） -->
+        <div class="main-content" id="mainContent">
+            <div class="exercise-title" id="exerciseTitle"></div>
+
+            <div class="context-box" id="contextBox">
                 <h3>背景信息</h3>
-                <p>Two campaign strategists, Mark and Sarah, are discussing a serious incident involving their candidate running for Mayor just weeks before the election.</p>
+                <p id="contextText"></p>
             </div>
 
             <div class="audio-controls">
@@ -712,7 +750,7 @@
                         <select class="speed-select" id="speedSelect">
                             <option value="0.5">0.5x</option>
                             <option value="0.75">0.75x</option>
-                            <option value="1" selected="">1x</option>
+                            <option value="1" selected>1x</option>
                             <option value="1.25">1.25x</option>
                             <option value="1.5">1.5x</option>
                         </select>
@@ -725,7 +763,7 @@
                             <span>👩</span>
                             <span>女声选择</span>
                         </div>
-                        <select class="voice-select voice-select-full" id="femaleVoiceSelect"><option value="auto">自动选择</option><optgroup label="女声"><option value="female-81">Microsoft Natasha Online (Natural) - English (Australia) (en-AU)</option><option value="female-84">Microsoft Yan Online (Natural) - English (Hong Kong SAR) (en-HK)</option><option value="female-87">Microsoft Neerja Online (Natural) - English (India) (en-IN)</option><option value="female-90">Microsoft Emily Online (Natural) - English (Ireland) (en-IE)</option><option value="female-93">Microsoft Mitchell Online (Natural) - English (New Zealand) (en-NZ)</option><option value="female-96">Microsoft Ezinne Online (Natural) - English (Nigeria) (en-NG)</option><option value="female-99">Microsoft Ava Online (Natural) - English (United States) (en-US)</option><option value="female-102">Microsoft Brian Online (Natural) - English (United States) (en-US)</option><option value="female-105">Microsoft Leah Online (Natural) - English (South Africa) (en-ZA)</option><option value="female-111">Microsoft Ryan Online (Natural) - English (United Kingdom) (en-GB)</option><option value="female-114">Microsoft Ana Online (Natural) - English (United States) (en-US)</option><option value="female-117">Microsoft AvaMultilingual Online (Natural) - English (United States) (en-US)</option><option value="female-120">Microsoft EmmaMultilingual Online (Natural) - English (United States) (en-US)</option><option value="female-123">Microsoft Jenny Online (Natural) - English (United States) (en-US)</option><option value="female-126">Microsoft Steffan Online (Natural) - English (United States) (en-US)</option><option value="female-246">Microsoft Marcelo Online (Natural) - Spanish (Bolivia) (es-BO)</option><option value="female-247">Microsoft Sofia Online (Natural) - Spanish (Bolivia) (es-BO)</option></optgroup></select>
+                        <select class="voice-select voice-select-full" id="femaleVoiceSelect"></select>
                         <div class="voice-test-buttons">
                             <button class="test-voice-button test-female" onclick="testFemaleVoice()">测试女声</button>
                         </div>
@@ -736,7 +774,7 @@
                             <span>👨</span>
                             <span>男声选择</span>
                         </div>
-                        <select class="voice-select voice-select-full" id="maleVoiceSelect"><option value="auto">自动选择</option><optgroup label="男声"><option value="male-23">Microsoft Iman Online (Natural) - Arabic (Libya) (ar-LY)</option><option value="male-27">Microsoft Abdullah Online (Natural) - Arabic (Oman) (ar-OM)</option><option value="male-28">Microsoft Aysha Online (Natural) - Arabic (Oman) (ar-OM)</option><option value="male-33">Microsoft Amany Online (Natural) - Arabic (Syria) (ar-SY)</option><option value="male-64">Microsoft Xiaobei Online (Natural) - Chinese (Northeastern Mandarin) (zh-CN-liaoning)</option><option value="male-67">Microsoft HsiaoYu Online (Natural) - Chinese (Taiwanese Mandarin) (zh-TW)</option><option value="male-68">Microsoft Xiaoni Online (Natural) - Chinese (Zhongyuan Mandarin Shaanxi) (zh-CN-shaanxi)</option><option value="male-73">Microsoft Christel Online (Natural) - Danish (Denmark) (da-DK)</option><option value="male-74">Microsoft Jeppe Online (Natural) - Danish (Denmark) (da-DK)</option><option value="male-80">Microsoft WilliamMultilingual Online (Natural) - English (Australia) (en-AU)</option><option value="male-82">Microsoft Clara Online (Natural) - English (Canada) (en-CA)</option><option value="male-83">Microsoft Liam Online (Natural) - English (Canada) (en-CA)</option><option value="male-85">Microsoft Sam Online (Natural) - English (Hongkong) (en-HK)</option><option value="male-86">Microsoft Neerja Online (Natural) - English (India) (Preview) (en-IN)</option><option value="male-88">Microsoft Prabhat Online (Natural) - English (India) (en-IN)</option><option value="male-89">Microsoft Connor Online (Natural) - English (Ireland) (en-IE)</option><option value="male-91">Microsoft Asilia Online (Natural) - English (Kenya) (en-KE)</option><option value="male-92">Microsoft Chilemba Online (Natural) - English (Kenya) (en-KE)</option><option value="male-94">Microsoft Molly Online (Natural) - English (New Zealand) (en-NZ)</option><option value="male-95">Microsoft Abeo Online (Natural) - English (Nigeria) (en-NG)</option><option value="male-97">Microsoft James Online (Natural) - English (Philippines) (en-PH)</option><option value="male-98">Microsoft Rosa Online (Natural) - English (Philippines) (en-PH)</option><option value="male-100">Microsoft Andrew Online (Natural) - English (United States) (en-US)</option><option value="male-101">Microsoft Emma Online (Natural) - English (United States) (en-US)</option><option value="male-103">Microsoft Luna Online (Natural) - English (Singapore) (en-SG)</option><option value="male-104">Microsoft Wayne Online (Natural) - English (Singapore) (en-SG)</option><option value="male-106">Microsoft Luke Online (Natural) - English (South Africa) (en-ZA)</option><option value="male-107">Microsoft Elimu Online (Natural) - English (Tanzania) (en-TZ)</option><option value="male-108">Microsoft Imani Online (Natural) - English (Tanzania) (en-TZ)</option><option value="male-109">Microsoft Libby Online (Natural) - English (United Kingdom) (en-GB)</option><option value="male-110">Microsoft Maisie Online (Natural) - English (United Kingdom) (en-GB)</option><option value="male-112">Microsoft Sonia Online (Natural) - English (United Kingdom) (en-GB)</option><option value="male-113">Microsoft Thomas Online (Natural) - English (United Kingdom) (en-GB)</option><option value="male-115">Microsoft AndrewMultilingual Online (Natural) - English (United States) (en-US)</option><option value="male-116">Microsoft Aria Online (Natural) - English (United States) (en-US)</option><option value="male-118">Microsoft BrianMultilingual Online (Natural) - English (United States) (en-US)</option><option value="male-119">Microsoft Christopher Online (Natural) - English (United States) (en-US)</option><option value="male-121">Microsoft Eric Online (Natural) - English (United States) (en-US)</option><option value="male-122">Microsoft Guy Online (Natural) - English (United States) (en-US)</option><option value="male-124">Microsoft Michelle Online (Natural) - English (United States) (en-US)</option><option value="male-125">Microsoft Roger Online (Natural) - English (United States) (en-US)</option><option value="male-150">Microsoft Ingrid Online (Natural) - German (Austria) (de-AT)</option><option value="male-151">Microsoft Jonas Online (Natural) - German (Austria) (de-AT)</option><option value="male-152">Microsoft SeraphinaMultilingual Online (Natural) - German (Germany) (de-DE)</option><option value="male-153">Microsoft FlorianMultilingual Online (Natural) - German (Germany) (de-DE)</option><option value="male-154">Microsoft Amala Online (Natural) - German (Germany) (de-DE)</option><option value="male-155">Microsoft Conrad Online (Natural) - German (Germany) (de-DE)</option><option value="male-156">Microsoft Katja Online (Natural) - German (Germany) (de-DE)</option><option value="male-157">Microsoft Killian Online (Natural) - German (Germany) (de-DE)</option><option value="male-158">Microsoft Jan Online (Natural) - German (Switzerland) (de-CH)</option><option value="male-159">Microsoft Leni Online (Natural) - German (Switzerland) (de-CH)</option><option value="male-198">Microsoft Keomany Online (Natural) - Lao (Laos) (lo-LA)</option><option value="male-205">Microsoft Osman Online (Natural) - Malay (Malaysia) (ms-MY)</option><option value="male-212">Microsoft Manohar Online (Natural) - Marathi (India) (mr-IN)</option><option value="male-230">Microsoft Alina Online (Natural) - Romanian (Romania) (ro-RO)</option><option value="male-231">Microsoft Emil Online (Natural) - Romanian (Romania) (ro-RO)</option><option value="male-256">Microsoft Manuel Online (Natural) - Spanish (Cuba) (es-CU)</option><option value="male-314">Microsoft Salman Online (Natural) - Urdu (India) (ur-IN)</option></optgroup></select>
+                        <select class="voice-select voice-select-full" id="maleVoiceSelect"></select>
                         <div class="voice-test-buttons">
                             <button class="test-voice-button test-male" onclick="testMaleVoice()">测试男声</button>
                         </div>
@@ -754,574 +792,46 @@
                     </div>
                 </div>
 
-                <div class="voice-debug" id="voiceDebug" style="display: block;">
+                <div class="voice-debug" id="voiceDebug" style="display: none;">
                     <strong>语音调试信息:</strong>
-                    <div id="debugInfo">
-                总语音数量: 325<br>
-                可用女声: 17<br>
-                可用男声: 58<br>
-                当前女声选择: female-81<br>
-                当前男声选择: male-115<br>
-                浏览器: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0<br>
-                语言支持: 325 语音
-            </div>
+                    <div id="debugInfo"></div>
                 </div>
             </div>
 
             <div class="content-grid">
                 <div class="dialogue-section">
                     <button class="dialogue-toggle" onclick="toggleDialogue()">
-                        <span id="dialogueToggleText">👁️ 隐藏对话内容</span>
+                        <span id="dialogueToggleText">👁️ 显示对话内容</span>
                     </button>
 
                     <h3 class="section-title">对话内容 💬</h3>
 
                     <div class="dialogue-content" id="dialogueContent" style="display: none;">
-                        <!-- 对话内容保持不变 -->
-                        <div class="dialogue-item woman">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👩</span>
-                                <span>女士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;Mark, we have a disaster downstairs. The domestic staff is threatening to go on strike. Our candidate, Mr. Henderson, just had a meltdown.&#39;, &#39;woman&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">Mark</span>,
-                                <span class="word" onclick="toggleWord(this)">we</span>
-                                <span class="word" onclick="toggleWord(this)">have</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">disaster</span>
-                                <span class="word mastered" onclick="toggleWord(this)">downstairs</span>.
-                                <span class="word" onclick="toggleWord(this)">The</span>
-                                <span class="word mastered" onclick="toggleWord(this)">domestic</span>
-                                <span class="word" onclick="toggleWord(this)">staff</span>
-                                <span class="word" onclick="toggleWord(this)">is</span>
-                                <span class="word" onclick="toggleWord(this)">threatening</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">go</span>
-                                <span class="word" onclick="toggleWord(this)">on</span>
-                                <span class="word" onclick="toggleWord(this)">strike</span>.
-                                <span class="word" onclick="toggleWord(this)">Our</span>
-                                <span class="word mastered" onclick="toggleWord(this)">candidate</span>,
-                                <span class="word" onclick="toggleWord(this)">Mr</span>.
-                                <span class="word" onclick="toggleWord(this)">Henderson</span>,
-                                <span class="word" onclick="toggleWord(this)">just</span>
-                                <span class="word" onclick="toggleWord(this)">had</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">meltdown</span>.
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item man">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👨</span>
-                                <span>男士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;Again? I saw trash and broken furniture in the hallway. Did he really drag the heavy oak table across the room?&#39;, &#39;man&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">Again</span>?
-                                <span class="word" onclick="toggleWord(this)">I</span>
-                                <span class="word" onclick="toggleWord(this)">saw</span>
-                                <span class="word mastered" onclick="toggleWord(this)">trash</span>
-                                <span class="word" onclick="toggleWord(this)">and</span>
-                                <span class="word mastered" onclick="toggleWord(this)">broken</span>
-                                <span class="word mastered" onclick="toggleWord(this)">furniture</span>
-                                <span class="word" onclick="toggleWord(this)">in</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">hallway</span>.
-                                <span class="word" onclick="toggleWord(this)">Did</span>
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">really</span>
-                                <span class="word mastered" onclick="toggleWord(this)">drag</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">heavy</span>
-                                <span class="word" onclick="toggleWord(this)">oak</span>
-                                <span class="word" onclick="toggleWord(this)">table</span>
-                                <span class="word" onclick="toggleWord(this)">across</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">room</span>?
-                            </div>
-                        </div>
-
-                        <!-- 继续添加其他对话行 -->
-                        <div class="dialogue-item woman">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👩</span>
-                                <span>女士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;Yes. He claimed the chef put a political trick in his soup. He threw a wet towel, and even his underwear, at the poor servant. It was incredibly offensive. He shouted that he is the lord of this manor, not a plain citizen.&#39;, &#39;woman&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">Yes</span>.
-                                <span class="word" onclick="toggleWord(this)">He</span>
-                                <span class="word" onclick="toggleWord(this)">claimed</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word mastered" onclick="toggleWord(this)">chef</span>
-                                <span class="word" onclick="toggleWord(this)">put</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word mastered" onclick="toggleWord(this)">political</span>
-                                <span class="word mastered" onclick="toggleWord(this)">trick</span>
-                                <span class="word" onclick="toggleWord(this)">in</span>
-                                <span class="word" onclick="toggleWord(this)">his</span>
-                                <span class="word" onclick="toggleWord(this)">soup</span>.
-                                <span class="word" onclick="toggleWord(this)">He</span>
-                                <span class="word mastered" onclick="toggleWord(this)">threw</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">wet</span>
-                                <span class="word mastered" onclick="toggleWord(this)">towel</span>,
-                                <span class="word" onclick="toggleWord(this)">and</span>
-                                <span class="word" onclick="toggleWord(this)">even</span>
-                                <span class="word" onclick="toggleWord(this)">his</span>
-                                <span class="word mastered" onclick="toggleWord(this)">underwear</span>,
-                                <span class="word" onclick="toggleWord(this)">at</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">poor</span>
-                                <span class="word mastered" onclick="toggleWord(this)">servant</span>.
-                                <span class="word" onclick="toggleWord(this)">It</span>
-                                <span class="word" onclick="toggleWord(this)">was</span>
-                                <span class="word mastered" onclick="toggleWord(this)">incredibly</span>
-                                <span class="word mastered" onclick="toggleWord(this)">offensive</span>.
-                                <span class="word" onclick="toggleWord(this)">He</span>
-                                <span class="word" onclick="toggleWord(this)">shouted</span>
-                                <span class="word" onclick="toggleWord(this)">that</span>
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">is</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word mastered" onclick="toggleWord(this)">lord</span>
-                                <span class="word" onclick="toggleWord(this)">of</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>
-                                <span class="word" onclick="toggleWord(this)">manor</span>,
-                                <span class="word" onclick="toggleWord(this)">not</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word mastered" onclick="toggleWord(this)">plain</span>
-                                <span class="word" onclick="toggleWord(this)">citizen</span>.
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item man">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👨</span>
-                                <span>男士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;That violates every criterion of civil behavior. If this external news reaches the Congress or the ethics panel, our capital in this contest will vanish. We can&#39;t pretend this is normal.&#39;, &#39;man&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">That</span>
-                                <span class="word" onclick="toggleWord(this)">violates</span>
-                                <span class="word" onclick="toggleWord(this)">every</span>
-                                <span class="word" onclick="toggleWord(this)">criterion</span>
-                                <span class="word" onclick="toggleWord(this)">of</span>
-                                <span class="word" onclick="toggleWord(this)">civil</span>
-                                <span class="word" onclick="toggleWord(this)">behavior</span>.
-                                <span class="word" onclick="toggleWord(this)">If</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>
-                                <span class="word" onclick="toggleWord(this)">external</span>
-                                <span class="word" onclick="toggleWord(this)">news</span>
-                                <span class="word" onclick="toggleWord(this)">reaches</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">Congress</span>
-                                <span class="word" onclick="toggleWord(this)">or</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">ethics</span>
-                                <span class="word" onclick="toggleWord(this)">panel</span>,
-                                <span class="word" onclick="toggleWord(this)">our</span>
-                                <span class="word" onclick="toggleWord(this)">capital</span>
-                                <span class="word" onclick="toggleWord(this)">in</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>
-                                <span class="word" onclick="toggleWord(this)">contest</span>
-                                <span class="word" onclick="toggleWord(this)">will</span>
-                                <span class="word" onclick="toggleWord(this)">vanish</span>.
-                                <span class="word" onclick="toggleWord(this)">We</span>
-                                <span class="word" onclick="toggleWord(this)">can't</span>
-                                <span class="word" onclick="toggleWord(this)">pretend</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>
-                                <span class="word" onclick="toggleWord(this)">is</span>
-                                <span class="word" onclick="toggleWord(this)">normal</span>.
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item woman">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👩</span>
-                                <span>女士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;I tried to whisper a warning to him, but he wouldn&#39;t lean in to listen. He has this notion that he can do whatever he wants. Honestly, he looks hollow. He&#39;s smoking pack after pack of cigarettes; I&#39;m worried about his lung capacity and organ failure.&#39;, &#39;woman&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">I</span>
-                                <span class="word" onclick="toggleWord(this)">tried</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">whisper</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">warning</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">him</span>,
-                                <span class="word" onclick="toggleWord(this)">but</span>
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">wouldn't</span>
-                                <span class="word" onclick="toggleWord(this)">lean</span>
-                                <span class="word" onclick="toggleWord(this)">in</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">listen</span>.
-                                <span class="word" onclick="toggleWord(this)">He</span>
-                                <span class="word" onclick="toggleWord(this)">has</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>
-                                <span class="word" onclick="toggleWord(this)">notion</span>
-                                <span class="word" onclick="toggleWord(this)">that</span>
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">can</span>
-                                <span class="word" onclick="toggleWord(this)">do</span>
-                                <span class="word" onclick="toggleWord(this)">whatever</span>
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">wants</span>.
-                                <span class="word" onclick="toggleWord(this)">Honestly</span>,
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">looks</span>
-                                <span class="word" onclick="toggleWord(this)">hollow</span>.
-                                <span class="word" onclick="toggleWord(this)">He's</span>
-                                <span class="word" onclick="toggleWord(this)">smoking</span>
-                                <span class="word" onclick="toggleWord(this)">pack</span>
-                                <span class="word" onclick="toggleWord(this)">after</span>
-                                <span class="word" onclick="toggleWord(this)">pack</span>
-                                <span class="word" onclick="toggleWord(this)">of</span>
-                                <span class="word" onclick="toggleWord(this)">cigarettes</span>;
-                                <span class="word" onclick="toggleWord(this)">I'm</span>
-                                <span class="word" onclick="toggleWord(this)">worried</span>
-                                <span class="word" onclick="toggleWord(this)">about</span>
-                                <span class="word" onclick="toggleWord(this)">his</span>
-                                <span class="word" onclick="toggleWord(this)">lung</span>
-                                <span class="word" onclick="toggleWord(this)">capacity</span>
-                                <span class="word" onclick="toggleWord(this)">and</span>
-                                <span class="word" onclick="toggleWord(this)">organ</span>
-                                <span class="word" onclick="toggleWord(this)">failure</span>.
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item man">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👨</span>
-                                <span>男士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;We need insight into his mental state. Is he fit for the obligation of being mayor? Regardless, we must retain control. What is the amount needed to settle this?&#39;, &#39;man&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">We</span>
-                                <span class="word" onclick="toggleWord(this)">need</span>
-                                <span class="word" onclick="toggleWord(this)">insight</span>
-                                <span class="word" onclick="toggleWord(this)">into</span>
-                                <span class="word" onclick="toggleWord(this)">his</span>
-                                <span class="word" onclick="toggleWord(this)">mental</span>
-                                <span class="word" onclick="toggleWord(this)">state</span>.
-                                <span class="word" onclick="toggleWord(this)">Is</span>
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">fit</span>
-                                <span class="word" onclick="toggleWord(this)">for</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">obligation</span>
-                                <span class="word" onclick="toggleWord(this)">of</span>
-                                <span class="word" onclick="toggleWord(this)">being</span>
-                                <span class="word" onclick="toggleWord(this)">mayor</span>?
-                                <span class="word" onclick="toggleWord(this)">Regardless</span>,
-                                <span class="word" onclick="toggleWord(this)">we</span>
-                                <span class="word" onclick="toggleWord(this)">must</span>
-                                <span class="word" onclick="toggleWord(this)">retain</span>
-                                <span class="word" onclick="toggleWord(this)">control</span>.
-                                <span class="word" onclick="toggleWord(this)">What</span>
-                                <span class="word" onclick="toggleWord(this)">is</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">amount</span>
-                                <span class="word" onclick="toggleWord(this)">needed</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">settle</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>?
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item woman">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👩</span>
-                                <span>女士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;The attorney sent a quotation. The staff demands a higher wage and a sincere apology, or they walk. It is a hefty sum.&#39;, &#39;woman&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">The</span>
-                                <span class="word" onclick="toggleWord(this)">attorney</span>
-                                <span class="word" onclick="toggleWord(this)">sent</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">quotation</span>.
-                                <span class="word" onclick="toggleWord(this)">The</span>
-                                <span class="word" onclick="toggleWord(this)">staff</span>
-                                <span class="word" onclick="toggleWord(this)">demands</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">higher</span>
-                                <span class="word" onclick="toggleWord(this)">wage</span>
-                                <span class="word" onclick="toggleWord(this)">and</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">sincere</span>
-                                <span class="word" onclick="toggleWord(this)">apology</span>,
-                                <span class="word" onclick="toggleWord(this)">or</span>
-                                <span class="word" onclick="toggleWord(this)">they</span>
-                                <span class="word" onclick="toggleWord(this)">walk</span>.
-                                <span class="word" onclick="toggleWord(this)">It</span>
-                                <span class="word" onclick="toggleWord(this)">is</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">hefty</span>
-                                <span class="word" onclick="toggleWord(this)">sum</span>.
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item man">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👨</span>
-                                <span>男士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;We have to grant it. Our objective is to win. We can&#39;t let the motor of this campaign stall now. Is there any stuff we can use to spin this?&#39;, &#39;man&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">We</span>
-                                <span class="word" onclick="toggleWord(this)">have</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">grant</span>
-                                <span class="word" onclick="toggleWord(this)">it</span>.
-                                <span class="word" onclick="toggleWord(this)">Our</span>
-                                <span class="word" onclick="toggleWord(this)">objective</span>
-                                <span class="word" onclick="toggleWord(this)">is</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">win</span>.
-                                <span class="word" onclick="toggleWord(this)">We</span>
-                                <span class="word" onclick="toggleWord(this)">can't</span>
-                                <span class="word" onclick="toggleWord(this)">let</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">motor</span>
-                                <span class="word" onclick="toggleWord(this)">of</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>
-                                <span class="word" onclick="toggleWord(this)">campaign</span>
-                                <span class="word" onclick="toggleWord(this)">stall</span>
-                                <span class="word" onclick="toggleWord(this)">now</span>.
-                                <span class="word" onclick="toggleWord(this)">Is</span>
-                                <span class="word" onclick="toggleWord(this)">there</span>
-                                <span class="word" onclick="toggleWord(this)">any</span>
-                                <span class="word" onclick="toggleWord(this)">stuff</span>
-                                <span class="word" onclick="toggleWord(this)">we</span>
-                                <span class="word" onclick="toggleWord(this)">can</span>
-                                <span class="word" onclick="toggleWord(this)">use</span>
-                                <span class="word" onclick="toggleWord(this)">to</span>
-                                <span class="word" onclick="toggleWord(this)">spin</span>
-                                <span class="word" onclick="toggleWord(this)">this</span>?
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item woman">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👩</span>
-                                <span>女士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;Not really. He didn&#39;t act like a benevolent priest; he acted like a tyrant. Even the quotation from his speech regarding family values sounds somewhat ironic now.&#39;, &#39;woman&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">Not</span>
-                                <span class="word" onclick="toggleWord(this)">really</span>.
-                                <span class="word" onclick="toggleWord(this)">He</span>
-                                <span class="word" onclick="toggleWord(this)">didn't</span>
-                                <span class="word" onclick="toggleWord(this)">act</span>
-                                <span class="word" onclick="toggleWord(this)">like</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">benevolent</span>
-                                <span class="word" onclick="toggleWord(this)">priest</span>;
-                                <span class="word" onclick="toggleWord(this)">he</span>
-                                <span class="word" onclick="toggleWord(this)">acted</span>
-                                <span class="word" onclick="toggleWord(this)">like</span>
-                                <span class="word" onclick="toggleWord(this)">a</span>
-                                <span class="word" onclick="toggleWord(this)">tyrant</span>.
-                                <span class="word" onclick="toggleWord(this)">Even</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">quotation</span>
-                                <span class="word" onclick="toggleWord(this)">from</span>
-                                <span class="word" onclick="toggleWord(this)">his</span>
-                                <span class="word" onclick="toggleWord(this)">speech</span>
-                                <span class="word" onclick="toggleWord(this)">regarding</span>
-                                <span class="word" onclick="toggleWord(this)">family</span>
-                                <span class="word" onclick="toggleWord(this)">values</span>
-                                <span class="word" onclick="toggleWord(this)">sounds</span>
-                                <span class="word" onclick="toggleWord(this)">somewhat</span>
-                                <span class="word" onclick="toggleWord(this)">ironic</span>
-                                <span class="word" onclick="toggleWord(this)">now</span>.
-                            </div>
-                        </div>
-
-                        <div class="dialogue-item man">
-                            <div class="speaker-info">
-                                <span class="speaker-avatar">👨</span>
-                                <span>男士</span>
-                                <button class="play-line-button" onclick="playLine(&#39;Fine. Pay them. I&#39;ll go handle the candidate.&#39;, &#39;man&#39;)">🔊</button>
-                            </div>
-                            <div class="dialogue-text">
-                                <span class="word" onclick="toggleWord(this)">Fine</span>.
-                                <span class="word" onclick="toggleWord(this)">Pay</span>
-                                <span class="word" onclick="toggleWord(this)">them</span>.
-                                <span class="word" onclick="toggleWord(this)">I'll</span>
-                                <span class="word" onclick="toggleWord(this)">go</span>
-                                <span class="word" onclick="toggleWord(this)">handle</span>
-                                <span class="word" onclick="toggleWord(this)">the</span>
-                                <span class="word" onclick="toggleWord(this)">candidate</span>.
-                            </div>
-                        </div>
+                        <!-- 动态加载的对话内容将显示在这里 -->
                     </div>
                 </div>
 
                 <div class="questions-section">
                     <button class="questions-toggle" onclick="toggleQuestionTitles()">
-                        <span id="questionTitlesToggleText">👁️ 隐藏题目</span>
+                        <span id="questionTitlesToggleText">👁️ 显示题目</span>
                     </button>
 
                     <h3 class="section-title">题目 📝</h3>
 
                     <div class="questions-content" id="questionsContent">
-                        <!-- 题目内容保持不变 -->
-                        <div class="question-item">
-                            <div class="question-number">Q1</div>
-                            <div class="question-text">What is the main problem the speakers are discussing?</div>
-
-                            <div class="option-item" onclick="selectOption(this, 1, &#39;A&#39;)">
-                                <div class="option-letter">A</div>
-                                <div class="option-text">The candidate's health issues regarding his lungs.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 1, &#39;B&#39;)">
-                                <div class="option-letter">B</div>
-                                <div class="option-text">A financial dispute with the campaign attorney.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 1, &#39;C&#39;)">
-                                <div class="option-letter">C</div>
-                                <div class="option-text">The candidate's inappropriate behavior and the resulting staff crisis.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 1, &#39;D&#39;)">
-                                <div class="option-letter">D</div>
-                                <div class="option-text">A political trick played by the opposition party.</div>
-                            </div>
-
-                            <div class="answer-explanation" id="explanation1" style="display: none;">
-                                <div class="explanation-header">
-                                    <h4>答案解析</h4>
-                                    <div class="correct-answer">正确答案: C</div>
-                                </div>
-                                <div class="explanation-text">
-                                    The dialogue revolves around the candidate ("Mr. Henderson") having a "meltdown," throwing "furniture" and "underwear," and the staff threatening to "strike." While health and finance are mentioned, they are secondary to the behavioral crisis.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-item">
-                            <div class="question-number">Q2</div>
-                            <div class="question-text">According to the woman, how did the candidate react to the chef?</div>
-
-                            <div class="option-item" onclick="selectOption(this, 2, &#39;A&#39;)">
-                                <div class="option-letter">A</div>
-                                <div class="option-text">He fired the chef for being a spy.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 2, &#39;B&#39;)">
-                                <div class="option-letter">B</div>
-                                <div class="option-text">He physically dragged the chef downstairs.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 2, &#39;C&#39;)">
-                                <div class="option-letter">C</div>
-                                <div class="option-text">He remained civil but refused to eat the soup.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 2, &#39;D&#39;)">
-                                <div class="option-letter">D</div>
-                                <div class="option-text">He became aggressive and threw personal items.</div>
-                            </div>
-
-                            <div class="answer-explanation" id="explanation2" style="display: none;">
-                                <div class="explanation-header">
-                                    <h4>答案解析</h4>
-                                    <div class="correct-answer">正确答案: D</div>
-                                </div>
-                                <div class="explanation-text">
-                                    The woman states, "He threw a wet towel, and even his underwear, at the poor servant." This matches the option of becoming aggressive and throwing personal items.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-item">
-                            <div class="question-number">Q3</div>
-                            <div class="question-text">What does the man imply is the priority in handling the situation?</div>
-
-                            <div class="option-item" onclick="selectOption(this, 3, &#39;A&#39;)">
-                                <div class="option-letter">A</div>
-                                <div class="option-text">Ensuring the candidate receives medical attention for his organs.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 3, &#39;B&#39;)">
-                                <div class="option-letter">B</div>
-                                <div class="option-text">Preventing the incident from becoming public to protect the campaign.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 3, &#39;C&#39;)">
-                                <div class="option-letter">C</div>
-                                <div class="option-text">Convincing the Congress panel to intervene in the strike.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 3, &#39;D&#39;)">
-                                <div class="option-letter">D</div>
-                                <div class="option-text">Teaching the candidate how to behave like a civil servant.</div>
-                            </div>
-
-                            <div class="answer-explanation" id="explanation3" style="display: none;">
-                                <div class="explanation-header">
-                                    <h4>答案解析</h4>
-                                    <div class="correct-answer">正确答案: B</div>
-                                </div>
-                                <div class="explanation-text">
-                                    The man mentions that if "external news reaches the Congress... our capital in this contest will vanish." He later states their "objective is to win" and agrees to pay to "retain control," implying the priority is containing the damage to the campaign.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-item">
-                            <div class="question-number">Q4</div>
-                            <div class="question-text">What solution do the speakers agree upon regarding the staff?</div>
-
-                            <div class="option-item" onclick="selectOption(this, 4, &#39;A&#39;)">
-                                <div class="option-letter">A</div>
-                                <div class="option-text">They will replace the domestic staff immediately.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 4, &#39;B&#39;)">
-                                <div class="option-letter">B</div>
-                                <div class="option-text">They will meet the financial and emotional demands of the staff.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 4, &#39;C&#39;)">
-                                <div class="option-letter">C</div>
-                                <div class="option-text">They will ask the priest to mediate the conflict.</div>
-                            </div>
-
-                            <div class="option-item" onclick="selectOption(this, 4, &#39;D&#39;)">
-                                <div class="option-letter">D</div>
-                                <div class="option-text">They will challenge the attorney's quotation in court.</div>
-                            </div>
-
-                            <div class="answer-explanation" id="explanation4" style="display: none;">
-                                <div class="explanation-header">
-                                    <h4>答案解析</h4>
-                                    <div class="correct-answer">正确答案: B</div>
-                                </div>
-                                <div class="explanation-text">
-                                    The woman mentions the staff demands a "higher wage" and a "sincere apology." The man concludes by saying, "We have to grant it... Pay them." This confirms they agree to meet the demands.
-                                </div>
-                            </div>
-                        </div>
+                        <!-- 动态加载的题目内容将显示在这里 -->
                     </div>
                 </div>
             </div>
 
             <div class="submit-section" id="submitSection">
-                <div class="progress-text">已完成 <span id="answeredCount">0</span> / 4 题</div>
-                <button class="submit-button" id="submitButton" onclick="submitAnswers()" disabled="">提交答案</button>
+                <div class="progress-text">已完成 <span id="answeredCount">0</span> / <span id="totalQuestions">0</span> 题</div>
+                <button class="submit-button" id="submitButton" onclick="submitAnswers()" disabled>提交答案</button>
             </div>
 
-            <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-section" id="resultsSection">
                 <div class="score-display">
-                    <span class="score-text">得分: <span id="correctCount">0</span> / 4 (<span id="percentage">0</span>%)</span>
+                    <span class="score-text">得分: <span id="correctCount">0</span> / <span id="totalQuestionsResult">0</span> (<span id="percentage">0</span>%)</span>
                     <span class="score-grade" id="scoreGrade">❌ 未通过</span>
                 </div>
                 <button class="reset-button" onclick="resetQuiz()">重新练习</button>
@@ -1331,192 +841,215 @@
 
     <script>
         let selectedAnswers = {};
-        let correctAnswers = {1: 'C', 2: 'D', 3: 'B', 4: 'B'};
+        let correctAnswers = {};
         let currentUtterance = null;
-        let dialogueVisible = false; // 默认为不显示对话内容
-        let questionTitlesVisible = false; // 默认为不显示题目标题
+        let dialogueVisible = false;
+        let questionTitlesVisible = false;
         let voices = [];
         let femaleVoices = [];
         let maleVoices = [];
         let progressInterval = null;
         let startTime = null;
-        let estimatedDuration = 60000; // 估计60秒
+        let estimatedDuration = 60000;
         let isPlaying = false;
         let currentDialogueIndex = 0;
+        let currentData = null;
+        let unknownWords = [];
 
-        // 对话数据，包含性别信息
-        const dialogueData = [
-            { text: "Mark, we have a disaster downstairs. The domestic staff is threatening to go on strike. Our candidate, Mr. Henderson, just had a meltdown.", gender: "woman" },
-            { text: "Again? I saw trash and broken furniture in the hallway. Did he really drag the heavy oak table across the room?", gender: "man" },
-            { text: "Yes. He claimed the chef put a political trick in his soup. He threw a wet towel, and even his underwear, at the poor servant. It was incredibly offensive. He shouted that he is the lord of this manor, not a plain citizen.", gender: "woman" },
-            { text: "That violates every criterion of civil behavior. If this external news reaches the Congress or the ethics panel, our capital in this contest will vanish. We can't pretend this is normal.", gender: "man" },
-            { text: "I tried to whisper a warning to him, but he wouldn't lean in to listen. He has this notion that he can do whatever he wants. Honestly, he looks hollow. He's smoking pack after pack of cigarettes; I'm worried about his lung capacity and organ failure.", gender: "woman" },
-            { text: "We need insight into his mental state. Is he fit for the obligation of being mayor? Regardless, we must retain control. What is the amount needed to settle this?", gender: "man" },
-            { text: "The attorney sent a quotation. The staff demands a higher wage and a sincere apology, or they walk. It is a hefty sum.", gender: "woman" },
-            { text: "We have to grant it. Our objective is to win. We can't let the motor of this campaign stall now. Is there any stuff we can use to spin this?", gender: "man" },
-            { text: "Not really. He didn't act like a benevolent priest; he acted like a tyrant. Even the quotation from his speech regarding family values sounds somewhat ironic now.", gender: "woman" },
-            { text: "Fine. Pay them. I'll go handle the candidate.", gender: "man" }
-        ];
+        // 文件输入处理
+        document.getElementById('jsonFileInput').addEventListener('change', handleJsonFile);
+        document.getElementById('wordsFileInput').addEventListener('change', handleWordsFile);
 
-        // 强制初始化语音
+        function handleJsonFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    loadExerciseData(data);
+                    loadingIndicator.style.display = 'none';
+                } catch (error) {
+                    alert('JSON文件格式错误: ' + error.message);
+                    loadingIndicator.style.display = 'none';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleWordsFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const words = e.target.result.split('\n')
+                    .map(word => word.trim().toLowerCase())
+                    .filter(word => word.length > 0);
+                unknownWords = words;
+                if (currentData) {
+                    loadExerciseData(currentData); // 重新加载以应用高亮
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadExerciseData(data) {
+            currentData = data;
+
+            // 显示主要内容
+            document.getElementById('mainContent').style.display = 'block';
+
+            // 设置标题和背景信息
+            document.getElementById('exerciseTitle').textContent = data.title || 'CET-6 听力练习';
+            document.getElementById('contextText').textContent = data.context || '';
+
+            // 加载对话内容
+            loadDialogue(data.dialogue);
+
+            // 加载题目
+            loadQuestions(data.questions);
+
+            // 重置答题状态
+            resetQuiz();
+        }
+
+        function loadDialogue(dialogue) {
+            const dialogueContent = document.getElementById('dialogueContent');
+            dialogueContent.innerHTML = '';
+
+            dialogue.forEach((item, index) => {
+                const dialogueItem = document.createElement('div');
+                dialogueItem.className = `dialogue-item ${item.speaker === 'W' ? 'woman' : 'man'}`;
+
+                const speakerInfo = document.createElement('div');
+                speakerInfo.className = 'speaker-info';
+                speakerInfo.innerHTML = `
+                    <span class="speaker-avatar">${item.speaker === 'W' ? '👩' : '👨'}</span>
+                    <span>${item.speaker === 'W' ? '女士' : '男士'}</span>
+                    <button class="play-line-button" onclick="playLine('${item.content.replace(/'/g, "\\'")}', '${item.speaker === 'W' ? 'woman' : 'man'}')">🔊</button>
+                `;
+
+                const dialogueText = document.createElement('div');
+                dialogueText.className = 'dialogue-text';
+                dialogueText.innerHTML = highlightWords(item.content);
+
+                dialogueItem.appendChild(speakerInfo);
+                dialogueItem.appendChild(dialogueText);
+                dialogueContent.appendChild(dialogueItem);
+            });
+        }
+
+        function loadQuestions(questions) {
+            const questionsContent = document.getElementById('questionsContent');
+            questionsContent.innerHTML = '';
+
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('totalQuestionsResult').textContent = questions.length;
+
+            questions.forEach((question, index) => {
+                correctAnswers[index + 1] = question.answer;
+
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item';
+
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = `Q${index + 1}`;
+
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.innerHTML = highlightWords(question.question);
+
+                questionItem.appendChild(questionNumber);
+                questionItem.appendChild(questionText);
+
+                // 添加选项
+                Object.entries(question.options).forEach(([key, option]) => {
+                    const optionItem = document.createElement('div');
+                    optionItem.className = 'option-item';
+                    optionItem.onclick = () => selectOption(optionItem, index + 1, key);
+
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'option-letter';
+                    optionLetter.textContent = key;
+
+                    const optionText = document.createElement('div');
+                    optionText.className = 'option-text';
+                    optionText.innerHTML = highlightWords(option);
+
+                    optionItem.appendChild(optionLetter);
+                    optionItem.appendChild(optionText);
+                    questionItem.appendChild(optionItem);
+                });
+
+                // 添加答案解释
+                const explanation = document.createElement('div');
+                explanation.className = 'answer-explanation';
+                explanation.id = `explanation${index + 1}`;
+                explanation.style.display = 'none';
+                explanation.innerHTML = `
+                    <div class="explanation-header">
+                        <h4>答案解析</h4>
+                        <div class="correct-answer">正确答案: ${question.answer}</div>
+                    </div>
+                    <div class="explanation-text">${question.explanation}</div>
+                `;
+
+                questionItem.appendChild(explanation);
+                questionsContent.appendChild(questionItem);
+            });
+        }
+
+        function highlightWords(text) {
+            if (unknownWords.length === 0) return text;
+
+            let highlightedText = text;
+            unknownWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                highlightedText = highlightedText.replace(regex, `<span class="word-highlight">$\u0026</span>`);
+            });
+
+            return highlightedText;
+        }
+
+        // 语音相关函数
         function forceInitializeVoices() {
-            console.log('Force initializing voices...');
-
-            // 取消所有当前语音
             speechSynthesis.cancel();
-
-            // 获取语音列表
             voices = speechSynthesis.getVoices();
-            console.log('Total voices available:', voices.length);
 
-            // 清空分类
             femaleVoices = [];
             maleVoices = [];
 
-            // 重新分类语音
             voices.forEach((voice, index) => {
                 const name = voice.name.toLowerCase();
-                const lang = voice.lang.toLowerCase();
 
-                console.log(`Voice ${index}: ${name} (${lang})`);
-
-                // 使用正确的女声列表
-                const femaleNames = [
-                    'microsoft aysha online (natural)',
-                    'microsoft amany online (natural)',
-                    'microsoft xiaobei online (natural)',
-                    'microsoft hsiaoyu online (natural)',
-                    'microsoft xiaoni online (natural)',
-                    'microsoft christel online (natural)',
-                    'microsoft clara online (natural)',
-                    'microsoft neerja online (natural)',
-                    'microsoft asilia online (natural)',
-                    'microsoft molly online (natural)',
-                    'microsoft abeo online (natural)',
-                    'microsoft rosa online (natural)',
-                    'microsoft emma online (natural)',
-                    'microsoft luna online (natural)',
-                    'microsoft imani online (natural)',
-                    'microsoft libby online (natural)',
-                    'microsoft maisie online (natural)',
-                    'microsoft sonia online (natural)',
-                    'microsoft aria online (natural)',
-                    'microsoft michelle online (natural)',
-                    'microsoft ingrid online (natural)',
-                    'microsoft seraphinamultilingual online (natural)',
-                    'microsoft amala online (natural)',
-                    'microsoft katja online (natural)',
-                    'microsoft leni online (natural)',
-                    'microsoft keomany online (natural)',
-                    'microsoft alina online (natural)',
-                    'microsoft natasha online (natural)',
-                    'microsoft yan online (natural)',
-                    'microsoft emily online (natural)',
-                    'microsoft mitchell online (natural)',
-                    'microsoft ezinne online (natural)',
-                    'microsoft ava online (natural)',
-                    'microsoft leah online (natural)',
-                    'microsoft ryan online (natural)',
-                    'microsoft ana online (natural)',
-                    'microsoft avamultilingual online (natural)',
-                    'microsoft emmamultilingual online (natural)',
-                    'microsoft jenny online (natural)',
-                    'microsoft steffan online (natural)',
-                    'microsoft sofia online (natural)',
-                    'microsoft marcelo online (natural)',
-                    'microsoft nathan online (natural)',
-                    'microsoft sophia online (natural)',
-                    'microsoft elena online (natural)',
-                    'microsoft michael online (natural)'
-                ];
-
-                // 使用正确的男声列表
-                const maleNames = [
-                    'microsoft iman online (natural)',
-                    'microsoft abdullah online (natural)',
-                    'microsoft jeppe online (natural)',
-                    'microsoft williammultilingual online (natural)',
-                    'microsoft liam online (natural)',
-                    'microsoft sam online (natural)',
-                    'microsoft prabhat online (natural)',
-                    'microsoft connor online (natural)',
-                    'microsoft chilemba online (natural)',
-                    'microsoft james online (natural)',
-                    'microsoft andrew online (natural)',
-                    'microsoft wayne online (natural)',
-                    'microsoft luke online (natural)',
-                    'microsoft elimu online (natural)',
-                    'microsoft thomas online (natural)',
-                    'microsoft andrewmultilingual online (natural)',
-                    'microsoft brianmultilingual online (natural)',
-                    'microsoft christopher online (natural)',
-                    'microsoft eric online (natural)',
-                    'microsoft guy online (natural)',
-                    'microsoft roger online (natural)',
-                    'microsoft jonas online (natural)',
-                    'microsoft florianmultilingual online (natural)',
-                    'microsoft conrad online (natural)',
-                    'microsoft killian online (natural)',
-                    'microsoft jan online (natural)',
-                    'microsoft osman online (natural)',
-                    'microsoft manohar online (natural)',
-                    'microsoft emil online (natural)',
-                    'microsoft manuel online (natural)',
-                    'microsoft salman online (natural)',
-                    'microsoft brian online (natural)',
-                    'microsoft william online (natural)',
-                    'microsoft archie online (natural)',
-                    'microsoft will online (natural)',
-                    'microsoft colin online (natural)',
-                    'microsoft aoi online (natural)',
-                    'microsoft mole online (natural)'
-                ];
-
-                // 检查是否为女声
-                const isFemale = femaleNames.some(femaleName => name.includes(femaleName));
-                const isMale = maleNames.some(maleName => name.includes(maleName));
-
-                if (isFemale) {
-                    femaleVoices.push({voice: voice, index: index, type: 'female'});
-                    console.log(`  -> Classified as female: ${name}`);
-                } else if (isMale) {
-                    maleVoices.push({voice: voice, index: index, type: 'male'});
-                    console.log(`  -> Classified as male: ${name}`);
+                // 简化的性别判断
+                if (name.includes('female') || name.includes('woman') ||
+                    name.includes('girl') || name.includes('微软晓') ||
+                    name.includes('微软小') || name.includes('natasha') ||
+                    name.includes('jenny') || name.includes('ava') ||
+                    name.includes('emma') || name.includes('mia')) {
+                    femaleVoices.push({voice: voice, index: index});
+                } else {
+                    maleVoices.push({voice: voice, index: index});
                 }
             });
 
-            console.log(`Final classification: ${femaleVoices.length} female, ${maleVoices.length} male`);
-
             populateVoiceSelects();
-            updateDebugInfo();
-
-            return true;
         }
 
-        // 填充语音选择框
         function populateVoiceSelects() {
             const femaleSelect = document.getElementById('femaleVoiceSelect');
             const maleSelect = document.getElementById('maleVoiceSelect');
 
-            if (!femaleSelect || !maleSelect) {
-                console.error('Voice select elements not found');
-                return;
-            }
+            femaleSelect.innerHTML = '<option value="auto">自动选择</option>';
+            maleSelect.innerHTML = '<option value="auto">自动选择</option>';
 
-            // 清空现有选项
-            femaleSelect.innerHTML = '';
-            maleSelect.innerHTML = '';
-
-            // 自动选择选项
-            const autoOption = document.createElement('option');
-            autoOption.value = 'auto';
-            autoOption.textContent = '自动选择';
-            const femaleAutoOption = autoOption.cloneNode(true);
-            const maleAutoOption = autoOption.cloneNode(true);
-            femaleSelect.appendChild(femaleAutoOption);
-            maleSelect.appendChild(maleAutoOption);
-
-            // 添加女声选项
             if (femaleVoices.length > 0) {
                 const femaleGroup = document.createElement('optgroup');
                 femaleGroup.label = '女声';
@@ -1529,7 +1062,6 @@
                 femaleSelect.appendChild(femaleGroup);
             }
 
-            // 添加男声选项
             if (maleVoices.length > 0) {
                 const maleGroup = document.createElement('optgroup');
                 maleGroup.label = '男声';
@@ -1541,141 +1073,57 @@
                 });
                 maleSelect.appendChild(maleGroup);
             }
-
-            console.log('Voice select boxes populated successfully');
         }
 
-        // 更新调试信息
-        function updateDebugInfo() {
-            const debugInfo = document.getElementById('debugInfo');
-            const debugDiv = document.getElementById('voiceDebug');
-
-            if (!debugInfo || !debugDiv) return;
-
-            const femaleSelection = document.getElementById('femaleVoiceSelect').value;
-            const maleSelection = document.getElementById('maleVoiceSelect').value;
-
-            debugInfo.innerHTML = `
-                总语音数量: ${voices.length}<br>
-                可用女声: ${femaleVoices.length}<br>
-                可用男声: ${maleVoices.length}<br>
-                当前女声选择: ${femaleSelection}<br>
-                当前男声选择: ${maleSelection}<br>
-                浏览器: ${navigator.userAgent}<br>
-                语言支持: ${speechSynthesis.getVoices().length} 语音
-            `;
-
-            debugDiv.style.display = 'block';
-        }
-
-        // 选择合适的语音 - 增强版本
         function selectVoice(gender) {
-            console.log(`Selecting voice for gender: ${gender}`);
-
             const voiceSelect = gender === 'woman' ?
                 document.getElementById('femaleVoiceSelect') :
                 document.getElementById('maleVoiceSelect');
 
-            if (!voiceSelect) {
-                console.error(`Voice select element for ${gender} not found`);
-                return null;
-            }
-
             const voiceSelectValue = voiceSelect.value;
-            console.log(`Voice select value: ${voiceSelectValue}`);
 
-            let selectedVoice = null;
-            let selectedIndex = -1;
-
-            // 如果用户手动选择了语音
             if (voiceSelectValue !== 'auto') {
                 const [voiceType, voiceIndex] = voiceSelectValue.split('-');
                 const index = parseInt(voiceIndex);
 
                 if (voices[index]) {
-                    selectedVoice = voices[index];
-                    selectedIndex = index;
-                    console.log(`Manual voice selected for ${gender}:`, selectedVoice.name);
-                } else {
-                    console.warn(`Invalid voice index: ${index}`);
+                    return voices[index];
                 }
             }
 
-            // 自动选择 - 优先选择 en-US 的语音
-            if (!selectedVoice) {
-                const targetVoices = gender === 'woman' ? femaleVoices : maleVoices;
+            // 自动选择
+            const targetVoices = gender === 'woman' ? femaleVoices : maleVoices;
 
-                if (targetVoices.length > 0) {
-                    // 首先尝试选择 en-US 的语音
-                    const enUSVoice = targetVoices.find(item =>
-                        item.voice.lang.toLowerCase().includes('en-us')
-                    );
+            if (targetVoices.length > 0) {
+                const enUSVoice = targetVoices.find(item =>
+                    item.voice.lang.toLowerCase().includes('en-us')
+                );
 
-                    if (enUSVoice) {
-                        selectedVoice = enUSVoice.voice;
-                        selectedIndex = enUSVoice.index;
-                        console.log(`Auto selected en-US ${gender} voice:`, selectedVoice.name);
-                    } else {
-                        // 如果没有 en-US，选择第一个可用语音
-                        selectedVoice = targetVoices[0].voice;
-                        selectedIndex = targetVoices[0].index;
-                        console.log(`Auto selected first available ${gender} voice:`, selectedVoice.name);
-                    }
-
-                    // 自动更新下拉列表的选择
-                    if (selectedIndex >= 0) {
-                        voiceSelect.value = `${gender === 'woman' ? 'female' : 'male'}-${selectedIndex}`;
-                        console.log(`Updated voice select to: ${voiceSelect.value}`);
-                    }
+                if (enUSVoice) {
+                    return enUSVoice.voice;
                 } else {
-                    console.warn(`No ${gender} voices available`);
+                    return targetVoices[0].voice;
                 }
             }
 
             // 回退到默认语音
-            if (!selectedVoice) {
-                const englishVoices = voices.filter(v => v.lang.includes('en'));
-                selectedVoice = englishVoices.length > 0 ? englishVoices[0] : voices[0];
-                console.log(`Fallback voice selected:`, selectedVoice ? selectedVoice.name : 'None');
-            }
-
-            return selectedVoice;
+            const englishVoices = voices.filter(v => v.lang.includes('en'));
+            return englishVoices.length > 0 ? englishVoices[0] : voices[0];
         }
 
-        // 创建对话语音合成 - 增强版本
         function createDialogueUtterance(text, gender) {
-            console.log(`Creating utterance for ${gender}:`, text.substring(0, 30) + '...');
-
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
             utterance.rate = parseFloat(document.getElementById('speedSelect').value);
 
-            // 使用对应性别的语音
             const selectedVoice = selectVoice(gender);
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
-                console.log(`Using ${gender} voice:`, selectedVoice.name);
-            } else {
-                console.warn(`No voice available for ${gender}, using default`);
             }
-
-            // 添加事件监听器用于调试
-            utterance.onstart = () => {
-                console.log(`Started speaking (${gender}):`, text.substring(0, 20) + '...');
-            };
-
-            utterance.onend = () => {
-                console.log(`Finished speaking (${gender}):`, text.substring(0, 20) + '...');
-            };
-
-            utterance.onerror = (event) => {
-                console.error(`Error speaking (${gender}):`, event);
-            };
 
             return utterance;
         }
 
-        // 测试女声
         function testFemaleVoice() {
             stopDialogue();
             const testText = "This is a test of the female voice selection.";
@@ -1683,7 +1131,6 @@
             speechSynthesis.speak(utterance);
         }
 
-        // 测试男声
         function testMaleVoice() {
             stopDialogue();
             const testText = "This is a test of the male voice selection.";
@@ -1691,46 +1138,41 @@
             speechSynthesis.speak(utterance);
         }
 
-        // 播放完整对话 - 使用多种语音交替播放
+        // 对话播放相关函数
         function playDialogue() {
-            stopDialogue();
+            if (!currentData || !currentData.dialogue) return;
 
-            console.log('Starting dialogue playback...');
+            stopDialogue();
             currentDialogueIndex = 0;
             isPlaying = true;
 
             function playNextLine() {
-                // 检查是否被停止
-                if (!isPlaying || currentDialogueIndex >= dialogueData.length) {
-                    // 播放完成或被停止
+                if (!isPlaying || currentDialogueIndex >= currentData.dialogue.length) {
                     stopProgress();
                     document.getElementById('playButton').style.display = 'inline-block';
                     document.getElementById('stopButton').style.display = 'none';
                     isPlaying = false;
-
-                    if (currentDialogueIndex >= dialogueData.length) {
-                        console.log('Dialogue playback completed');
-                    } else {
-                        console.log('Dialogue playback stopped');
-                    }
+                    currentUtterance = null;
                     return;
                 }
 
-                const dialogue = dialogueData[currentDialogueIndex];
-                console.log(`Playing line ${currentDialogueIndex + 1}/${dialogueData.length} (${dialogue.gender})`);
+                const dialogue = currentData.dialogue[currentDialogueIndex];
+                const utterance = createDialogueUtterance(dialogue.content,
+                    dialogue.speaker === 'W' ? 'woman' : 'man');
 
-                const utterance = createDialogueUtterance(dialogue.text, dialogue.gender);
+                currentUtterance = utterance;
 
                 utterance.onend = function() {
                     currentDialogueIndex++;
-                    // 添加短暂延迟，使对话更自然
+                    currentUtterance = null;
                     if (isPlaying) {
                         setTimeout(playNextLine, 300);
                     }
                 };
 
                 utterance.onerror = function(event) {
-                    console.error('Error playing dialogue line:', event);
+                    console.error('语音播放错误:', event);
+                    currentUtterance = null;
                     currentDialogueIndex++;
                     if (isPlaying) {
                         setTimeout(playNextLine, 300);
@@ -1740,40 +1182,38 @@
                 speechSynthesis.speak(utterance);
             }
 
-            // 开始播放
             document.getElementById('playButton').style.display = 'none';
             document.getElementById('stopButton').style.display = 'inline-block';
             startProgress();
             playNextLine();
         }
 
-        // 停止播放
         function stopDialogue() {
-            if (currentUtterance || speechSynthesis.speaking) {
-                isPlaying = false;  // 设置停止标志
-                speechSynthesis.cancel();
-                currentUtterance = null;
-                document.getElementById('playButton').style.display = 'inline-block';
-                document.getElementById('stopButton').style.display = 'none';
-                stopProgress();
-                console.log('Dialogue playback stopped');
-            }
+            isPlaying = false;
+            speechSynthesis.cancel();
+            currentUtterance = null;
+            currentDialogueIndex = 0;  // 重置索引
+            document.getElementById('playButton').style.display = 'inline-block';
+            document.getElementById('stopButton').style.display = 'none';
+            stopProgress();
         }
 
-        // 播放单行
         function playLine(text, gender) {
-            // 停止对话播放但继续播放单行
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel();
                 stopProgress();
             }
-            console.log(`Playing single line (${gender}):`, text.substring(0, 30) + '...');
 
             const utterance = createDialogueUtterance(text, gender);
+            currentUtterance = utterance;
+
+            utterance.onend = function() {
+                currentUtterance = null;
+            };
+
             speechSynthesis.speak(utterance);
         }
 
-        // 开始进度指示
         function startProgress() {
             startTime = Date.now();
             progressInterval = setInterval(() => {
@@ -1784,7 +1224,6 @@
                     document.getElementById('progressFill').style.width = progress + '%';
                     document.getElementById('progressIndicator').style.width = progress + '%';
 
-                    // 更新时间显示
                     const currentSeconds = Math.floor(elapsed / 1000);
                     const totalSeconds = Math.floor(estimatedDuration / 1000);
                     document.getElementById('currentTime').textContent = formatTime(currentSeconds);
@@ -1793,14 +1232,12 @@
             }, 100);
         }
 
-        // 停止进度指示
         function stopProgress() {
             if (progressInterval) {
                 clearInterval(progressInterval);
                 progressInterval = null;
             }
 
-            // 重置进度条
             setTimeout(() => {
                 document.getElementById('progressFill').style.width = '0%';
                 document.getElementById('progressIndicator').style.width = '0%';
@@ -1809,14 +1246,13 @@
             }, 1000);
         }
 
-        // 格式化时间
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${minutes}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // 切换对话显示/隐藏
+        // 界面控制函数
         function toggleDialogue() {
             const dialogueContent = document.getElementById('dialogueContent');
             const toggleText = document.getElementById('dialogueToggleText');
@@ -1832,28 +1268,19 @@
             }
         }
 
-        // 切换题目标题显示/隐藏
         function toggleQuestionTitles() {
-            const questionTitles = document.querySelectorAll('.question-text');
+            const questionTexts = document.querySelectorAll('.question-text');
             const toggleText = document.getElementById('questionTitlesToggleText');
-            const questionsTitlesVisible = toggleText.textContent.includes('隐藏');
 
-            questionTitles.forEach(title => {
-                if (questionsTitlesVisible) {
-                    title.style.display = 'none';
-                } else {
-                    title.style.display = 'block';
-                }
+            questionTitlesVisible = !questionTitlesVisible;
+
+            questionTexts.forEach(title => {
+                title.style.display = questionTitlesVisible ? 'block' : 'none';
             });
 
-            if (questionsTitlesVisible) {
-                toggleText.textContent = '👁️ 显示题目';
-            } else {
-                toggleText.textContent = '👁️ 隐藏题目';
-            }
+            toggleText.textContent = questionTitlesVisible ? '👁️ 隐藏题目' : '👁️ 显示题目';
         }
 
-        // 选择答案选项
         function selectOption(element, questionNumber, option) {
             const questionContainer = element.closest('.question-item');
             const options = questionContainer.querySelectorAll('.option-item');
@@ -1864,25 +1291,26 @@
             updateProgress();
         }
 
-        // 更新进度
         function updateProgress() {
+            const totalQuestions = Object.keys(correctAnswers).length;
             const answeredCount = Object.keys(selectedAnswers).length;
+
             document.getElementById('answeredCount').textContent = answeredCount;
 
             const submitButton = document.getElementById('submitButton');
-            submitButton.disabled = answeredCount !== 4;
+            submitButton.disabled = answeredCount !== totalQuestions;
         }
 
-        // 提交答案
         function submitAnswers() {
             let correctCount = 0;
+            const totalQuestions = Object.keys(correctAnswers).length;
 
             for (let questionNumber in selectedAnswers) {
                 if (selectedAnswers[questionNumber] === correctAnswers[questionNumber]) {
                     correctCount++;
                 }
 
-                document.getElementById('explanation' + questionNumber).style.display = 'block';
+                document.getElementById(`explanation${questionNumber}`).style.display = 'block';
 
                 const questionContainer = document.querySelector(`#explanation${questionNumber}`).closest('.question-item');
                 const options = questionContainer.querySelectorAll('.option-item');
@@ -1896,7 +1324,7 @@
                 });
             }
 
-            const percentage = Math.round((correctCount / 4) * 100);
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
             document.getElementById('correctCount').textContent = correctCount;
             document.getElementById('percentage').textContent = percentage;
 
@@ -1913,7 +1341,6 @@
             document.getElementById('resultsSection').style.display = 'block';
         }
 
-        // 重置练习
         function resetQuiz() {
             selectedAnswers = {};
 
@@ -1930,86 +1357,17 @@
             document.getElementById('resultsSection').style.display = 'none';
         }
 
-        // 切换单词掌握状态
-        function toggleWord(element) {
-            element.classList.toggle('mastered');
-        }
-
-        // 页面加载完成后初始化 - 增强版本
+        // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM content loaded');
-
-            // 多次尝试初始化语音
-            let attempts = 0;
-            const maxAttempts = 5;
-
-            function tryInitialize() {
-                attempts++;
-                console.log(`Voice initialization attempt ${attempts}/${maxAttempts}`);
-
-                if (forceInitializeVoices()) {
-                    console.log('Voice initialization successful');
-                } else if (attempts < maxAttempts) {
-                    console.log('Retrying voice initialization...');
-                    setTimeout(tryInitialize, 500);
-                } else {
-                    console.error('Failed to initialize voices after multiple attempts');
-                    // 即使失败也要显示调试信息
-                    updateDebugInfo();
-                }
-            }
-
-            // 立即尝试初始化
-            tryInitialize();
-
-            // 也监听语音变化事件
             if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = function() {
-                    console.log('Voices changed, reinitializing...');
-                    forceInitializeVoices();
-                };
+                speechSynthesis.onvoiceschanged = forceInitializeVoices;
             }
 
-            // 添加语音选择事件监听
-            setTimeout(() => {
-                const femaleSelect = document.getElementById('femaleVoiceSelect');
-                const maleSelect = document.getElementById('maleVoiceSelect');
-
-                if (femaleSelect) {
-                    femaleSelect.addEventListener('change', function() {
-                        console.log('Female voice selection changed to:', this.value);
-                        updateDebugInfo();
-                    });
-                }
-
-                if (maleSelect) {
-                    maleSelect.addEventListener('change', function() {
-                        console.log('Male voice selection changed to:', this.value);
-                        updateDebugInfo();
-                    });
-                }
-
-                // 延迟一次额外的初始化
-                setTimeout(() => {
-                    forceInitializeVoices();
-
-                    // 默认隐藏题目标题
-                    const questionTitles = document.querySelectorAll('.question-text');
-                    questionTitles.forEach(title => {
-                        title.style.display = 'none';
-                    });
-                    document.getElementById('questionTitlesToggleText').textContent = '👁️ 显示题目';
-                }, 1000);
-            }, 100);
-        });
-
-        // 也在页面加载后尝试一次
-        window.addEventListener('load', function() {
-            console.log('Page fully loaded');
+            // 延迟初始化语音
             setTimeout(() => {
                 forceInitializeVoices();
-            }, 500);
+            }, 100);
         });
     </script>
-
-</body></html>
+</body>
+</html>

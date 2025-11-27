@@ -169,7 +169,46 @@
             font-size: 0.85em;
             opacity: 0.7;
         }
-        
+
+        .pronounce-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+
+        .pronounce-btn:hover {
+            background: #5a67d8;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .pronounce-btn:active {
+            transform: scale(0.95);
+        }
+
+        .word-card.selected .pronounce-btn {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
         .controls {
             display: flex;
             gap: 15px;
@@ -349,6 +388,13 @@
                 <input type="file" id="knownWordsInput" accept=".txt">
                 <span class="file-info" id="knownWordsInfo">可选择已有的已认识单词文件进行合并</span>
             </div>
+
+            <div class="file-input-wrapper" style="margin-top: 15px;">
+                <label for="voiceSelect" style="font-weight: 500; margin-right: 10px;">🔊 发音声音:</label>
+                <select id="voiceSelect" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                    <option value="">加载中...</option>
+                </select>
+            </div>
             
             <div class="stats">
                 <div class="stat-item">
@@ -442,10 +488,24 @@
                 this.controls = document.getElementById('controls');
                 this.message = document.getElementById('message');
                 this.instructionHint = document.getElementById('instructionHint');
+                this.voiceSelect = document.getElementById('voiceSelect');
 
                 this.markUnknownBtn = document.getElementById('markUnknown');
                 this.nextBatchBtn = document.getElementById('nextBatch');
                 this.exportNowBtn = document.getElementById('exportNow');
+
+                // 语音合成 API
+                this.synth = window.speechSynthesis;
+                this.utterance = null;
+                this.currentSpeakingWord = null;
+                this.availableVoices = [];
+                this.selectedVoice = null;
+                this.isVoicesLoaded = false;
+
+                // 加载语音列表
+                this.loadVoices();
+                // 监听语音加载事件
+                this.synth.addEventListener('voiceschanged', () => this.loadVoices());
             }
             
             attachEventListeners() {
@@ -454,8 +514,107 @@
                 this.markUnknownBtn.addEventListener('click', () => this.markWordsAsUnknown());
                 this.nextBatchBtn.addEventListener('click', () => this.skipCurrentBatch());
                 this.exportNowBtn.addEventListener('click', () => this.exportCurrentProgress());
+                this.voiceSelect.addEventListener('change', () => this.updateSelectedVoice());
             }
             
+            // 加载可用的语音列表
+            loadVoices() {
+                try {
+                    const voices = this.synth.getVoices();
+
+                    if (!voices || voices.length === 0) {
+                        this.voiceSelect.innerHTML = '<option value="">未找到可用语音</option>';
+                        this.isVoicesLoaded = false;
+                        return;
+                    }
+
+                    // 过滤英语语音（包括美式和英式）
+                    this.availableVoices = voices.filter(voice =>
+                        voice.lang && (voice.lang.startsWith('en-') || voice.lang.startsWith('en_'))
+                    );
+
+                    // 如果没有找到英语语音，显示所有语音
+                    if (this.availableVoices.length === 0) {
+                        this.availableVoices = voices;
+                    }
+
+                    // 清空下拉框
+                    this.voiceSelect.innerHTML = '';
+
+                    // 添加选项
+                    this.availableVoices.forEach((voice, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+
+                        // 生成友好的显示名称
+                        const voiceName = voice.name || '未知语音';
+                        const langName = this.getLanguageName(voice.lang);
+                        const gender = this.getVoiceGender(voiceName);
+
+                        option.textContent = `${voiceName} (${langName}, ${gender})`;
+
+                        // 优先选择美式英语女声作为默认
+                        if (!this.selectedVoice &&
+                            voice.lang &&
+                            (voice.lang === 'en-US' || voice.lang === 'en_US') &&
+                            (voiceName.includes('Female') ||
+                             voiceName.includes('female') ||
+                             voiceName.includes(' woman') ||
+                             voiceName.includes('Girl'))) {
+                            this.selectedVoice = voice;
+                            option.selected = true;
+                        }
+
+                        this.voiceSelect.appendChild(option);
+                    });
+
+                    // 如果没有选中任何语音，选择第一个
+                    if (!this.selectedVoice && this.availableVoices.length > 0) {
+                        this.selectedVoice = this.availableVoices[0];
+                        this.voiceSelect.selectedIndex = 0;
+                    }
+
+                    this.isVoicesLoaded = true;
+
+                } catch (error) {
+                    console.error('加载语音列表失败:', error);
+                    this.voiceSelect.innerHTML = '<option value="">语音加载失败</option>';
+                }
+            }
+
+            // 获取语言名称
+            getLanguageName(langCode) {
+                const langMap = {
+                    'en': '英语',
+                    'en-US': '美式英语',
+                    'en-GB': '英式英语',
+                    'en_AU': '澳洲英语',
+                    'en_CA': '加拿大英语',
+                    'en_IN': '印度英语'
+                };
+                return langMap[langCode] || langCode || '未知';
+            }
+
+            // 判断语音性别（基于名称推测）
+            getVoiceGender(voiceName) {
+                const lowerName = voiceName.toLowerCase();
+                if (lowerName.includes('female') || lowerName.includes('woman') || lowerName.includes('girl')) {
+                    return '女';
+                } else if (lowerName.includes('male') || lowerName.includes('man') || lowerName.includes('boy')) {
+                    return '男';
+                }
+                return '未知';
+            }
+
+            // 更新选中的语音
+            updateSelectedVoice() {
+                const selectedIndex = parseInt(this.voiceSelect.value);
+                if (!isNaN(selectedIndex) && this.availableVoices[selectedIndex]) {
+                    this.selectedVoice = this.availableVoices[selectedIndex];
+                    console.log('已选择语音:', this.selectedVoice.name);
+                }
+            }
+
             // Fisher-Yates 洗牌算法
             shuffleArray(array) {
                 const shuffled = [...array];
@@ -571,23 +730,141 @@
             
             displayWords() {
                 this.wordsGrid.innerHTML = '';
-                
+
                 this.currentBatch.forEach((word, index) => {
                     const wordCard = document.createElement('div');
                     wordCard.className = 'word-card';
                     wordCard.dataset.word = word;
-                    
+
                     // 显示在原始列表中的位置
                     const originalIndex = this.allWords.indexOf(word) + 1;
-                    
-                    wordCard.innerHTML = `
-                        <div class="word-index">#${originalIndex}</div>
-                        <div class="word-text">${word}</div>
-                    `;
-                    
+
+                    // 创建发音按钮
+                    const pronounceBtn = document.createElement('button');
+                    pronounceBtn.className = 'pronounce-btn';
+                    pronounceBtn.textContent = '🔊';
+                    pronounceBtn.onclick = (event) => {
+                        event.stopPropagation();
+                        app.playPronunciation(word, pronounceBtn);
+                    };
+
+                    // 创建单词卡片内容
+                    const indexDiv = document.createElement('div');
+                    indexDiv.className = 'word-index';
+                    indexDiv.textContent = `#${originalIndex}`;
+
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'word-text';
+                    textDiv.textContent = word;
+
+                    wordCard.appendChild(indexDiv);
+                    wordCard.appendChild(textDiv);
+                    wordCard.appendChild(pronounceBtn);
+
                     wordCard.addEventListener('click', () => this.toggleWordSelection(word, wordCard));
                     this.wordsGrid.appendChild(wordCard);
                 });
+            }
+
+            async playPronunciation(word, buttonElement = null, retryCount = 0) {
+                const MAX_RETRIES = 2;
+
+                try {
+                    // 如果语音列表还未加载完成，先等待
+                    if (!this.isVoicesLoaded) {
+                        if (retryCount < MAX_RETRIES) {
+                            setTimeout(() => {
+                                this.playPronunciation(word, buttonElement, retryCount + 1);
+                            }, 500);
+                            return;
+                        } else {
+                            this.showMessage('语音数据加载中，请稍后再试', 'error');
+                            return;
+                        }
+                    }
+
+                    // 取消之前的语音播放
+                    if (this.synth.speaking) {
+                        this.synth.cancel();
+                    }
+
+                    // 创建新的语音请求
+                    this.utterance = new SpeechSynthesisUtterance(word);
+                    this.utterance.lang = this.selectedVoice ? this.selectedVoice.lang : 'en-US';
+                    this.utterance.rate = 0.9;
+                    this.utterance.pitch = 1.0;
+                    this.utterance.volume = 1.0;
+
+                    // 应用选中的语音
+                    if (this.selectedVoice) {
+                        this.utterance.voice = this.selectedVoice;
+                    }
+
+                    this.currentSpeakingWord = word;
+
+                    // 如果有按钮元素，显示播放状态
+                    if (buttonElement) {
+                        buttonElement.textContent = '⏳';
+                        buttonElement.style.opacity = '1';
+                    }
+
+                    // 播放开始时的回调
+                    this.utterance.onstart = () => {
+                        if (buttonElement) {
+                            buttonElement.textContent = '🔊';
+                            buttonElement.style.animation = 'pulse 1s infinite';
+                        }
+                    };
+
+                    // 播放完成后的回调
+                    this.utterance.onend = () => {
+                        this.currentSpeakingWord = null;
+                        if (buttonElement) {
+                            buttonElement.textContent = '🔊';
+                            buttonElement.style.animation = '';
+                        }
+                    };
+
+                    this.utterance.onerror = (event) => {
+                        console.error('语音播放错误:', event);
+                        this.currentSpeakingWord = null;
+
+                        // 重置按钮状态
+                        if (buttonElement) {
+                            buttonElement.textContent = '🔊';
+                            buttonElement.style.animation = '';
+                        }
+
+                        // 如果是首次失败，自动重试一次
+                        if (retryCount < MAX_RETRIES) {
+                            setTimeout(() => {
+                                this.playPronunciation(word, buttonElement, retryCount + 1);
+                            }, 300);
+                        } else {
+                            this.showMessage('单词发音失败，请检查浏览器权限', 'error');
+                        }
+                    };
+
+                    // 开始播放
+                    this.synth.speak(this.utterance);
+
+                } catch (error) {
+                    console.error('发音异常:', error);
+
+                    // 重置按钮状态
+                    if (buttonElement) {
+                        buttonElement.textContent = '🔊';
+                        buttonElement.style.animation = '';
+                    }
+
+                    if (retryCount < MAX_RETRIES) {
+                        setTimeout(() => {
+                            this.playPronunciation(word, buttonElement, retryCount + 1);
+                        }, 300);
+                    } else {
+                        this.showMessage('发音异常，请刷新页面重试', 'error');
+                    }
+                }
             }
             
             toggleWordSelection(word, element) {
@@ -772,8 +1049,9 @@
         }
         
         // 初始化应用
+        let app;
         document.addEventListener('DOMContentLoaded', () => {
-            new VocabularyClassifier();
+            app = new VocabularyClassifier();
         });
     </script>
 </body>

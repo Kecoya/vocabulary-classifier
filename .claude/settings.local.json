@@ -4,7 +4,9 @@
       "Bash(npm update:*)",
       "Bash(claude:*)",
       "Bash(npm install:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(node:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

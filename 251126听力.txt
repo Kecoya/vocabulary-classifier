@@ -1,66 +1,102 @@
-## [Crisis Management]
-**(Context: Two campaign strategists, Mark and Sarah, are discussing a serious incident involving their candidate running for Mayor just weeks before the election.)**
-
-**Dialogue Script:**
-
-**(W):** Mark, we have a disaster **downstairs**. The **domestic** staff is threatening to go on **strike**. Our **candidate**, Mr. Henderson, just had a meltdown.
-
-**(M):** Again? I saw **trash** and broken **furniture** in the hallway. Did he really **drag** the heavy oak table across the room?
-
-**(W):** Yes. He claimed the **chef** put a "political **trick**" in his soup. He threw a wet **towel**, and even his **underwear**, at the poor **servant**. It was incredibly **offensive**. He shouted that he is the **lord** of this manor, not a **plain** citizen.
-
-**(M):** That violates every **criterion** of **civil** behavior. If this **external** news reaches the **Congress** or the ethics **panel**, our **capital** in this **contest** will vanish. We can’t **pretend** this is normal.
-
-**(W):** I tried to **whisper** a warning to him, but he wouldn't **lean** in to listen. He has this **notion** that he can do whatever he wants. Honestly, he looks **hollow**. He’s smoking pack after pack of **cigarette**s; I’m worried about his **lung** capacity and **organ** failure.
-
-**(M):** We need **insight** into his mental state. Is he fit for the **obligation** of being **mayor**? Regardless, we must **retain** control. What is the **amount** needed to settle this?
-
-**(W):** The **attorney** sent a **quotation**. The staff demands a higher **wage** and a **sincere** apology, or they walk. It is a hefty sum.
-
-**(M):** We have to **grant** it. Our **objective** is to win. We can’t let the **motor** of this campaign stall now. Is there any **stuff** we can use to spin this?
-
-**(W):** Not really. He didn't act like a benevolent **priest**; he acted like a tyrant. Even the **quotation** from his speech regarding "family values" sounds **somewhat** ironic now.
-
-**(M):** Fine. Pay them. I’ll go handle the candidate.
-
-**Questions:**
-
-**Q1: What is the main problem the speakers are discussing?**
-A) The candidate’s health issues regarding his lungs.
-B) A financial dispute with the campaign attorney.
-C) The candidate’s inappropriate behavior and the resulting staff crisis.
-D) A political trick played by the opposition party.
-
-**Q2: According to the woman, how did the candidate react to the chef?**
-A) He fired the chef for being a spy.
-B) He physically dragged the chef downstairs.
-C) He remained civil but refused to eat the soup.
-D) He became aggressive and threw personal items.
-
-**Q3: What does the man imply is the priority in handling the situation?**
-A) ensuring the candidate receives medical attention for his organs.
-B) Preventing the incident from becoming public to protect the campaign.
-C) Convincing the Congress panel to intervene in the strike.
-D) Teaching the candidate how to behave like a civil servant.
-
-**Q4: What solution do the speakers agree upon regarding the staff?**
-A) They will replace the domestic staff immediately.
-B) They will meet the financial and emotional demands of the staff.
-C) They will ask the priest to mediate the conflict.
-D) They will challenge the attorney’s quotation in court.
-
-***
-
-**Answer Key & Explanation:**
-
-**1. C) The candidate’s inappropriate behavior and the resulting staff crisis.**
-*   **Reason:** The dialogue revolves around the candidate ("Mr. Henderson") having a "meltdown," throwing "furniture" and "underwear," and the staff threatening to "strike." While health and finance are mentioned, they are secondary to the behavioral crisis.
-
-**2. D) He became aggressive and threw personal items.**
-*   **Reason:** The woman states, "He threw a wet towel, and even his underwear, at the poor servant." This matches the option of becoming aggressive and throwing personal items.
-
-**3. B) Preventing the incident from becoming public to protect the campaign.**
-*   **Reason:** The man mentions that if "external news reaches the Congress... our capital in this contest will vanish." He later states their "objective is to win" and agrees to pay to "retain control," implying the priority is containing the damage to the campaign.
-
-**4. B) They will meet the financial and emotional demands of the staff.**
-*   **Reason:** The woman mentions the staff demands a "higher wage" and a "sincere apology." The man concludes by saying, "We have to grant it... Pay them." This confirms they agree to meet the demands.
+{
+"title": "Allegations Against a Political Candidate",
+"topic": "Social Issue / Political Scandal",
+"context": "A journalist is interviewing the attorney representing a mayoral candidate regarding recent scandals and allegations of misconduct.",
+"dialogue": [
+{
+"speaker": "W",
+"content": "Mr. Vance, thank you for meeting me. As the defending attorney for the leading mayor candidate, Mr. Lord, you must be aware of the rising tension. An investigative panel from congress has suggested he misused public capital to purchase domestic furniture and luxury stuff for his private villa."
+},
+{
+"speaker": "M",
+"content": "Let me be clear. That notion is offensive trash. We retain the objective stance that every amount spent met the strict criterion required by city law. Mr. Lord is a sincere and civil public servant. He has no obligation to respond to baseless rumors."
+},
+{
+"speaker": "W",
+"content": "Yet, sources whisper about a financial trick used to obtain a housing grant. Furthermore, there are complaints about his behavior at home. Did he really force a chef to drag heavy motor parts downstairs resulting in injury?"
+},
+{
+"speaker": "M",
+"content": "That story is somewhat distorted. He simply asked staff to clear the garage. He certainly didn't strike anyone, nor did he lean on employees to perform dangerous tasks. It’s a hollow claim."
+},
+{
+"speaker": "W",
+"content": "What about the incident with the local priest? The quotation in the paper claims Mr. Lord intentionally blew cigarette smoke in his face, showing total disregard for the man's lung condition and organ health."
+},
+{
+"speaker": "M",
+"content": "Please. You can't pretend that an accidental exhale is an assault. This is clearly an external attempt by rivals to sabotage the election contest."
+},
+{
+"speaker": "W",
+"content": "There are even bizarre reports of a dirty towel and underwear found in his official state vehicle. It seems plain messy and unprofessional."
+},
+{
+"speaker": "M",
+"content": "Laundry mix-ups happen during long campaigns."
+},
+{
+"speaker": "W",
+"content": "Finally, regarding the unpaid wage dispute with his former servant. Does this offer insight into his character?"
+},
+{
+"speaker": "M",
+"content": "We settled that. There is no story here. Now, I must go."
+}
+],
+"questions": [
+{
+"id": 1,
+"type": "General Idea",
+"question": "What is the main subject of the conversation?",
+"options": {
+"A": "The renovation plans for the city hall.",
+"B": "A series of accusations against a politician.",
+"C": "A legal dispute between a landlord and a tenant.",
+"D": "The health condition of a religious leader."
+},
+"answer": "B",
+"explanation": "The dialogue focuses on a journalist questioning an attorney about various scandals (misuse of funds, treatment of staff, behavior) involving a mayoral candidate, Mr. Lord."
+},
+{
+"id": 2,
+"type": "Specific Details",
+"question": "According to the woman, what did the investigative panel suggest about Mr. Lord?",
+"options": {
+"A": "He failed to pay his campaign staff on time.",
+"B": "He physically assaulted a local priest.",
+"C": "He used public funds for personal household items.",
+"D": "He stole a motor vehicle from the city."
+},
+"answer": "C",
+"explanation": "The woman mentions that the panel suggests he misused public capital to purchase 'domestic furniture and luxury stuff' for his private villa."
+},
+{
+"id": 3,
+"type": "Inference",
+"question": "How does the man explain the incident involving the chef?",
+"options": {
+"A": "The chef was pretending to be injured to get money.",
+"B": "Mr. Lord was helping the chef move the heavy items.",
+"C": "The story was exaggerated and no violence occurred.",
+"D": "The chef refused to clean the garage downstairs."
+},
+"answer": "C",
+"explanation": "The man states the story is 'somewhat distorted' and claims Mr. Lord simply asked for the garage to be cleared, emphasizing he didn't 'strike' anyone or 'lean' on them, implying the accusation of abuse is false or exaggerated."
+},
+{
+"id": 4,
+"type": "Attitude",
+"question": "What is the man's attitude toward the allegations mentioned by the woman?",
+"options": {
+"A": "Sympathetic and apologetic.",
+"B": "Dismissive and defensive.",
+"C": "Neutral and objective.",
+"D": "Confused and hesitant."
+},
+"answer": "B",
+"explanation": "Throughout the conversation, the man uses strong words like 'offensive trash,' 'hollow claim,' and claims the accusations are attempts to 'sabotage.' He consistently defends the candidate and dismisses the validity of the journalist's points."
+}
+],
+"word_count": 305
+}
