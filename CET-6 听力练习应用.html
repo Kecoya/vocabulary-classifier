@@ -963,7 +963,12 @@
 
                 const questionText = document.createElement('div');
                 questionText.className = 'question-text';
-                questionText.innerHTML = highlightWords(question.question);
+                questionText.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="flex: 1;">${highlightWords(question.question)}</span>
+                        <button class="play-line-button" onclick="playQuestion(${index})" title="播放题目" style="margin-left: 10px;">🔊</button>
+                    </div>
+                `;
 
                 questionItem.appendChild(questionNumber);
                 questionItem.appendChild(questionText);
@@ -1125,17 +1130,55 @@
         }
 
         function testFemaleVoice() {
-            stopDialogue();
+            stopAllPlayback();
             const testText = "This is a test of the female voice selection.";
             const utterance = createDialogueUtterance(testText, 'woman');
             speechSynthesis.speak(utterance);
         }
 
         function testMaleVoice() {
-            stopDialogue();
+            stopAllPlayback();
             const testText = "This is a test of the male voice selection.";
             const utterance = createDialogueUtterance(testText, 'man');
             speechSynthesis.speak(utterance);
+        }
+
+        // 估算播放时长函数
+        function estimateDuration() {
+            if (!currentData) return 60000; // 默认1分钟
+
+            const speedRate = parseFloat(document.getElementById('speedSelect').value);
+            const wordsPerSecond = 2.5 * speedRate; // 基础语速2.5词/秒，根据速率调整
+
+            let totalWords = 0;
+            let totalPauses = 0;
+
+            // 计算对话的词数和停顿时间
+            if (currentData.dialogue) {
+                currentData.dialogue.forEach(dialogue => {
+                    const words = dialogue.content.split(/\s+/).filter(w => w.length > 0).length;
+                    totalWords += words;
+                });
+                // 对话之间停顿：每句之间300ms
+                totalPauses += (currentData.dialogue.length - 1) * 300;
+            }
+
+            // 计算题目的词数和停顿时间
+            if (currentData.questions) {
+                currentData.questions.forEach((question, index) => {
+                    const words = question.question.split(/\s+/).filter(w => w.length > 0).length;
+                    totalWords += words;
+                });
+                // 题目之间停顿：每题之间10秒
+                totalPauses += (currentData.questions.length) * 10000; // 对话到题目 + 题目之间
+            }
+
+            // 计算朗读时间
+            const readingTime = (totalWords / wordsPerSecond) * 1000; // 转换为毫秒
+            const totalTime = readingTime + totalPauses;
+
+            // 确保至少30秒，最多10分钟
+            return Math.max(30000, Math.min(600000, totalTime));
         }
 
         // 对话播放相关函数
@@ -1148,11 +1191,25 @@
 
             function playNextLine() {
                 if (!isPlaying || currentDialogueIndex >= currentData.dialogue.length) {
-                    stopProgress();
-                    document.getElementById('playButton').style.display = 'inline-block';
-                    document.getElementById('stopButton').style.display = 'none';
-                    isPlaying = false;
-                    currentUtterance = null;
+                    if (isPlaying) {
+                        // 对话播放完成，等待10秒后播放题目
+                        setTimeout(() => {
+                            if (isPlaying && currentData.questions) {
+                                playQuestions();
+                            } else {
+                                stopProgress();
+                                document.getElementById('playButton').style.display = 'inline-block';
+                                document.getElementById('stopButton').style.display = 'none';
+                                isPlaying = false;
+                            }
+                        }, 10000);
+                    } else {
+                        stopProgress();
+                        document.getElementById('playButton').style.display = 'inline-block';
+                        document.getElementById('stopButton').style.display = 'none';
+                        isPlaying = false;
+                        currentUtterance = null;
+                    }
                     return;
                 }
 
@@ -1184,11 +1241,43 @@
 
             document.getElementById('playButton').style.display = 'none';
             document.getElementById('stopButton').style.display = 'inline-block';
+
+            // 估算并设置总时长
+            estimatedDuration = estimateDuration();
+
+            // 更新UI显示估算的总时长
+            const totalSeconds = Math.floor(estimatedDuration / 1000);
+            document.getElementById('totalTime').textContent = formatTime(totalSeconds);
+
             startProgress();
             playNextLine();
         }
 
-        function stopDialogue() {
+        function playQuestion(questionIndex) {
+            if (!currentData || !currentData.questions || questionIndex >= currentData.questions.length) return;
+
+            // 停止当前播放，防止冲突
+            stopAllPlayback();
+
+            const question = currentData.questions[questionIndex];
+            const questionText = `Question ${questionIndex + 1}. ${question.question}`;
+            const utterance = createDialogueUtterance(questionText, 'woman');
+
+            currentUtterance = utterance;
+
+            utterance.onend = function() {
+                currentUtterance = null;
+            };
+
+            utterance.onerror = function(event) {
+                console.error('单个题目播放错误:', event);
+                currentUtterance = null;
+            };
+
+            speechSynthesis.speak(utterance);
+        }
+
+        function stopAllPlayback() {
             isPlaying = false;
             speechSynthesis.cancel();
             currentUtterance = null;
@@ -1198,11 +1287,78 @@
             stopProgress();
         }
 
-        function playLine(text, gender) {
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-                stopProgress();
+        // 保持向后兼容
+        function stopDialogue() {
+            stopAllPlayback();
+        }
+
+        function playQuestions() {
+            if (!currentData || !currentData.questions || currentData.questions.length === 0) {
+                isPlaying = false;
+                return;
             }
+
+            let questionIndex = 0;
+
+            function playNextQuestion() {
+                if (!isPlaying || questionIndex >= currentData.questions.length) {
+                    isPlaying = false;
+                    document.getElementById('playButton').style.display = 'inline-block';
+                    document.getElementById('stopButton').style.display = 'none';
+                    return;
+                }
+
+                // 播放当前题目
+                const question = currentData.questions[questionIndex];
+                const questionText = `Question ${questionIndex + 1}. ${question.question}`;
+                const utterance = createDialogueUtterance(questionText, 'woman');
+
+                currentUtterance = utterance;
+
+                utterance.onend = function() {
+                    currentUtterance = null;
+                    questionIndex++;
+
+                    if (isPlaying && questionIndex < currentData.questions.length) {
+                        // 题目之间间隔10秒
+                        setTimeout(() => {
+                            if (isPlaying) {
+                                playNextQuestion();
+                            }
+                        }, 10000);
+                    } else if (isPlaying) {
+                        // 所有题目播放完毕
+                        isPlaying = false;
+                        document.getElementById('playButton').style.display = 'inline-block';
+                        document.getElementById('stopButton').style.display = 'none';
+                        stopProgress();
+                    }
+                };
+
+                utterance.onerror = function(event) {
+                    console.error('题目语音播放错误:', event);
+                    currentUtterance = null;
+                    questionIndex++;
+
+                    if (isPlaying && questionIndex < currentData.questions.length) {
+                        setTimeout(playNextQuestion, 10000);
+                    } else {
+                        isPlaying = false;
+                        document.getElementById('playButton').style.display = 'inline-block';
+                        document.getElementById('stopButton').style.display = 'none';
+                        stopProgress();
+                    }
+                };
+
+                speechSynthesis.speak(utterance);
+            }
+
+            playNextQuestion();
+        }
+
+        function playLine(text, gender) {
+            // 停止当前播放，防止冲突
+            stopAllPlayback();
 
             const utterance = createDialogueUtterance(text, gender);
             currentUtterance = utterance;
@@ -1242,7 +1398,14 @@
                 document.getElementById('progressFill').style.width = '0%';
                 document.getElementById('progressIndicator').style.width = '0%';
                 document.getElementById('currentTime').textContent = '0:00';
-                document.getElementById('totalTime').textContent = '0:00';
+
+                // 如果当前有数据，显示估算的总时长，否则显示 0:00
+                if (currentData) {
+                    const totalSeconds = Math.floor(estimatedDuration / 1000);
+                    document.getElementById('totalTime').textContent = formatTime(totalSeconds);
+                } else {
+                    document.getElementById('totalTime').textContent = '0:00';
+                }
             }, 1000);
         }
 
@@ -1367,6 +1530,15 @@
             setTimeout(() => {
                 forceInitializeVoices();
             }, 100);
+
+            // 监听语速变化，重新估算时长（如果有已加载的数据）
+            document.getElementById('speedSelect').addEventListener('change', function() {
+                if (currentData && !isPlaying) {
+                    const newDuration = estimateDuration();
+                    const totalSeconds = Math.floor(newDuration / 1000);
+                    document.getElementById('totalTime').textContent = formatTime(totalSeconds);
+                }
+            });
         });
     </script>
 </body>
