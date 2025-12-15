@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentence Audio Player - 句子语音播放器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.save-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        button.save-btn:hover {
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+
+        button.download-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.download-btn:hover {
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
+        }
+
+        .status {
+            padding: 20px 30px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            margin: 20px 30px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .sentence-list {
+            padding: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .sentence-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #28a745;
+            transition: all 0.3s ease;
+        }
+
+        .sentence-item.active {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+        }
+
+        .sentence-item h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .sentence-item .words {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .sentence-item .english {
+            color: #212529;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .sentence-item .chinese {
+            color: #007bff;
+            font-size: 1em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .settings {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .setting-item label {
+            min-width: 150px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .setting-item input, .setting-item select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 250px;
+        }
+
+        .voice-selection {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .voice-group {
+            flex: 1;
+        }
+
+        .voice-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .voice-group select {
+            width: 100%;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 10px rgba(79, 172, 254, 0.4);
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sentence-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 30px;
+            border-left: 4px solid #dc3545;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+      </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Sentence Audio Player</h1>
+            <p>句子语音播放器 - English ×2 → Chinese ×1 → English ×1</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept=".json,.txt">
+                    <label for="fileInput" class="file-input-label">📁 Load JSON File</label>
+                </div>
+                <button id="playAllBtn" disabled>▶️ Play All Sentences</button>
+                <button id="stopBtn" disabled>⏹️ Stop</button>
+              </div>
+        </div>
+
+        <div id="statusDiv" class="status" style="display: none;">
+            Ready to play sentences
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="settings">
+            <div class="setting-item">
+                <label>Reading Speed:</label>
+                <input type="range" id="speedRange" min="0.5" max="1.5" step="0.1" value="1.0">
+                <span id="speedValue">1.0x</span>
+            </div>
+            <div class="setting-item">
+                <label>Pause Between:</label>
+                <input type="range" id="pauseRange" min="1" max="10" step="1" value="3">
+                <span id="pauseValue">3 seconds</span>
+            </div>
+            <div class="setting-item">
+                <div class="voice-selection">
+                    <div class="voice-group">
+                        <label>Male Voice (Required):</label>
+                        <select id="maleVoiceSelect">
+                            <option value="">Select Male Voice</option>
+                        </select>
+                    </div>
+                    <div class="voice-group">
+                        <label>Female Voice (Required):</label>
+                        <select id="femaleVoiceSelect">
+                            <option value="">Select Female Voice</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorDiv" class="error" style="display: none;"></div>
+
+        <div class="sentence-list" id="sentenceList">
+            <p style="text-align: center; color: #6c757d; padding: 40px;">
+                Load a JSON file to start playing sentences
+            </p>
+        </div>
+    </div>
+
+    <script>
+        class SentencePlayer {
+            constructor() {
+                this.sentences = [];
+                this.isPlaying = false;
+                this.currentIndex = 0;
+                this.voiceAlternation = false; // false = male, true = female
+
+                this.initializeElements();
+                this.initializeEventListeners();
+                this.loadVoices();
+            }
+
+            initializeElements() {
+                this.fileInput = document.getElementById('fileInput');
+                this.playAllBtn = document.getElementById('playAllBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.statusDiv = document.getElementById('statusDiv');
+                this.sentenceList = document.getElementById('sentenceList');
+                this.progressFill = document.getElementById('progressFill');
+                this.errorDiv = document.getElementById('errorDiv');
+                this.speedRange = document.getElementById('speedRange');
+                this.speedValue = document.getElementById('speedValue');
+                this.pauseRange = document.getElementById('pauseRange');
+                this.pauseValue = document.getElementById('pauseValue');
+                this.maleVoiceSelect = document.getElementById('maleVoiceSelect');
+                this.femaleVoiceSelect = document.getElementById('femaleVoiceSelect');
+            }
+
+            initializeEventListeners() {
+                this.fileInput.addEventListener('change', (e) => this.loadFile(e));
+                this.playAllBtn.addEventListener('click', () => this.playAll());
+                this.stopBtn.addEventListener('click', () => this.stop());
+
+                this.maleVoiceSelect.addEventListener('change', () => this.validateVoiceSelection());
+                this.femaleVoiceSelect.addEventListener('change', () => this.validateVoiceSelection());
+
+                this.speedRange.addEventListener('input', (e) => {
+                    this.speedValue.textContent = e.target.value + 'x';
+                });
+
+                this.pauseRange.addEventListener('input', (e) => {
+                    this.pauseValue.textContent = e.target.value + ' seconds';
+                });
+
+                // Voice change listener
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => this.loadVoices();
+                }
+            }
+
+            loadVoices() {
+                const voices = speechSynthesis.getVoices();
+
+                // Clear existing options
+                this.maleVoiceSelect.innerHTML = '<option value="">Select Male Voice</option>';
+                this.femaleVoiceSelect.innerHTML = '<option value="">Select Female Voice</option>';
+
+                // Find en-US male and female voices
+                const maleVoices = voices.filter(voice =>
+                    voice.lang.startsWith('en-US') &&
+                    (voice.name.toLowerCase().includes('male') ||
+                     voice.name.toLowerCase().includes('david') ||
+                     voice.name.toLowerCase().includes('alex') ||
+                     voice.name.toLowerCase().includes('daniel') ||
+                     voice.name.toLowerCase().includes('chris') ||
+                     (!voice.name.toLowerCase().includes('female') &&
+                      !voice.name.toLowerCase().includes('samantha') &&
+                      !voice.name.toLowerCase().includes('karen') &&
+                      !voice.name.toLowerCase().includes('susan') &&
+                      !voice.name.toLowerCase().includes('ava') &&
+                      !voice.name.toLowerCase().includes('zira')))
+                );
+
+                const femaleVoices = voices.filter(voice =>
+                    voice.lang.startsWith('en-US') &&
+                    (voice.name.toLowerCase().includes('female') ||
+                     voice.name.toLowerCase().includes('samantha') ||
+                     voice.name.toLowerCase().includes('karen') ||
+                     voice.name.toLowerCase().includes('susan') ||
+                     voice.name.toLowerCase().includes('ava') ||
+                     voice.name.toLowerCase().includes('zira') ||
+                     voice.name.toLowerCase().includes('monica'))
+                );
+
+                // Add male voices to select
+                maleVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    this.maleVoiceSelect.appendChild(option);
+                });
+
+                // Add female voices to select
+                femaleVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    this.femaleVoiceSelect.appendChild(option);
+                });
+
+                // If no specific voices found, add all en-US voices
+                if (maleVoices.length === 0 || femaleVoices.length === 0) {
+                    const enUSVoices = voices.filter(voice => voice.lang.startsWith('en-US'));
+                    enUSVoices.forEach((voice, index) => {
+                        const option = document.createElement('option');
+                        option.value = voice.name;
+                        option.textContent = `${voice.name} (${voice.lang})`;
+
+                        if (maleVoices.length === 0 && index < Math.ceil(enUSVoices.length / 2)) {
+                            this.maleVoiceSelect.appendChild(option);
+                        }
+                        if (femaleVoices.length === 0 && index >= Math.ceil(enUSVoices.length / 2)) {
+                            this.femaleVoiceSelect.appendChild(option);
+                        }
+                    });
+                }
+            }
+
+            validateVoiceSelection() {
+                const maleSelected = this.maleVoiceSelect.value !== '';
+                const femaleSelected = this.femaleVoiceSelect.value !== '';
+
+                // Enable play button only if both voices are selected and sentences are loaded
+                this.playAllBtn.disabled = !maleSelected || !femaleSelected || this.sentences.length === 0;
+
+                if (this.sentences.length > 0 && (!maleSelected || !femaleSelected)) {
+                    this.showError('Please select both a male and female voice to continue.');
+                } else {
+                    this.errorDiv.style.display = 'none';
+                }
+            }
+
+            loadFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const jsonData = e.target.result;
+                        this.processJsonData(jsonData);
+                        this.showStatus(`✅ Loaded file: ${file.name}`, 'success');
+                    } catch (error) {
+                        this.showError(`Error parsing JSON: ${error.message}`);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            processJsonData(jsonData) {
+                try {
+                    this.sentences = JSON.parse(jsonData);
+                    this.displaySentences();
+                    this.validateVoiceSelection();
+                    this.updateProgress();
+                } catch (error) {
+                    throw new Error(`Invalid JSON format: ${error.message}`);
+                }
+            }
+
+            displaySentences() {
+                this.sentenceList.innerHTML = '';
+
+                this.sentences.forEach((item, index) => {
+                    const sentenceDiv = document.createElement('div');
+                    sentenceDiv.className = 'sentence-item';
+                    sentenceDiv.id = `sentence-${index}`;
+
+                    sentenceDiv.innerHTML = `
+                        <div class="sentence-header">
+                            <h3>Sentence ${index + 1}</h3>
+                            <button class="play-btn" onclick="player.playSingleSentence(${index})" title="Play this sentence">
+                                🔊
+                            </button>
+                        </div>
+                        <div class="words">🏷️ Key words: ${item.covered_words.join(', ')}</div>
+                        <div class="english">🇺🇸 ${item.sentence}</div>
+                        <div class="chinese">🇨🇳 ${item.translation}</div>
+                    `;
+
+                    this.sentenceList.appendChild(sentenceDiv);
+                });
+            }
+
+            async playAll() {
+                if (this.isPlaying) return;
+
+                // Validate voice selection
+                const maleSelected = this.maleVoiceSelect.value !== '';
+                const femaleSelected = this.femaleVoiceSelect.value !== '';
+
+                if (!maleSelected || !femaleSelected) {
+                    this.showError('Please select both a male and female voice to continue.');
+                    return;
+                }
+
+                this.isPlaying = true;
+                this.currentIndex = 0;
+                this.playAllBtn.disabled = true;
+                this.stopBtn.disabled = false;
+
+                this.showStatus('🎵 Starting playback...', 'info');
+
+                for (let i = 0; i < this.sentences.length; i++) {
+                    if (!this.isPlaying) break;
+
+                    this.currentIndex = i;
+                    await this.playSentence(i, this.sentences[i]);
+                    this.updateProgress();
+                }
+
+                this.stop();
+                this.showStatus('✅ All sentences completed!', 'success');
+            }
+
+            async playSingleSentence(index) {
+                // Validate voice selection
+                const maleSelected = this.maleVoiceSelect.value !== '';
+                const femaleSelected = this.femaleVoiceSelect.value !== '';
+
+                if (!maleSelected || !femaleSelected) {
+                    this.showError('Please select both a male and female voice to continue.');
+                    return;
+                }
+
+                const item = this.sentences[index];
+
+                // Highlight current sentence
+                document.querySelectorAll('.sentence-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                document.getElementById(`sentence-${index}`).classList.add('active');
+
+                this.showStatus(`🔊 Playing Sentence ${index + 1}: ${item.covered_words.join(', ')}`, 'info');
+
+                // Randomly choose between male and female voice
+                this.voiceAlternation = Math.random() < 0.5;
+                await this.speak(item.sentence, 'en');
+
+                // Remove highlight
+                document.getElementById(`sentence-${index}`).classList.remove('active');
+            }
+
+            async playSentence(index, item) {
+                // Highlight current sentence
+                document.querySelectorAll('.sentence-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                document.getElementById(`sentence-${index}`).classList.add('active');
+
+                this.showStatus(`🔊 Playing Sentence ${index + 1}: ${item.covered_words.join(', ')}`, 'info');
+
+                // Scroll to current sentence
+                document.getElementById(`sentence-${index}`).scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                const readings = [
+                    { text: item.sentence, lang: 'en', description: 'First English Reading' },
+                    { text: item.sentence, lang: 'en', description: 'Second English Reading' },
+                    { text: item.translation, lang: 'zh-CN', description: 'Chinese Translation' },
+                    { text: item.sentence, lang: 'en', description: 'Final English Reading' }
+                ];
+
+                for (const reading of readings) {
+                    if (!this.isPlaying) break;
+
+                    await this.speak(reading.text, reading.lang);
+
+                    // Brief pause between readings (except after last)
+                    if (reading !== readings[readings.length - 1]) {
+                        await this.sleep(randomBetween(800, 2000));
+                    }
+                }
+
+                // Remove highlight
+                document.getElementById(`sentence-${index}`).classList.remove('active');
+            }
+
+            async speak(text, lang) {
+                return new Promise((resolve) => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+
+                    // Configure utterance
+                    utterance.lang = lang === 'en' ? 'en-US' : 'zh-CN';
+                    utterance.rate = parseFloat(this.speedRange.value);
+                    utterance.volume = 1.0;
+
+                    // Set voice for English
+                    if (lang === 'en') {
+                        // Use user-selected voices
+                        const maleVoice = this.maleVoiceSelect.value;
+                        const femaleVoice = this.femaleVoiceSelect.value;
+                        const voices = speechSynthesis.getVoices();
+
+                        if (this.voiceAlternation && femaleVoice) {
+                            // Female voice
+                            utterance.voice = voices.find(v => v.name === femaleVoice);
+                            utterance.pitch = 1.1;
+                        } else if (!this.voiceAlternation && maleVoice) {
+                            // Male voice
+                            utterance.voice = voices.find(v => v.name === maleVoice);
+                            utterance.pitch = 0.9;
+                        }
+
+                        // For playAll mode, alternate voices
+                        if (this.isPlaying) {
+                            this.voiceAlternation = !this.voiceAlternation;
+                        }
+                    } else {
+                        // Chinese voice with neutral pitch
+                        utterance.pitch = 1.0;
+
+                        // Find Chinese voice
+                        const voices = speechSynthesis.getVoices();
+                        const chineseVoice = voices.find(v => v.lang.startsWith('zh-'));
+                        if (chineseVoice) {
+                            utterance.voice = chineseVoice;
+                        }
+                    }
+
+                    utterance.onend = () => resolve();
+                    utterance.onerror = (event) => {
+                        console.error('Speech error:', event);
+                        resolve();
+                    };
+
+                    speechSynthesis.speak(utterance);
+                });
+            }
+
+            stop() {
+                this.isPlaying = false;
+                speechSynthesis.cancel();
+
+                this.validateVoiceSelection();
+
+                // Remove all highlights
+                document.querySelectorAll('.sentence-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+            }
+
+            updateProgress() {
+                const progress = (this.currentIndex / this.sentences.length) * 100;
+                this.progressFill.style.width = `${progress}%`;
+            }
+
+            showStatus(message, type = 'info') {
+                this.statusDiv.style.display = 'block';
+                this.statusDiv.textContent = message;
+                this.errorDiv.style.display = 'none';
+            }
+
+            showError(message) {
+                this.errorDiv.style.display = 'block';
+                this.errorDiv.textContent = `❌ ${message}`;
+                this.statusDiv.style.display = 'none';
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Utility function
+        function randomBetween(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // Initialize the player when page loads
+        let player;
+        document.addEventListener('DOMContentLoaded', () => {
+            player = new SentencePlayer();
+        });
+    </script>
+</body>
+</html>

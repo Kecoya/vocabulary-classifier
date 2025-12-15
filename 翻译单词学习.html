@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邹老师四六级翻译——翻译必考高分词汇表达总结</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .poster-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .core-strategy {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .core-strategy strong {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid #2a5298;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(42, 82, 152, 0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #2a5298;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .section-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f0f4ff;
+            transition: background 0.3s ease;
+        }
+
+        .chinese {
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+        }
+
+        .basic {
+            color: #666;
+            font-style: italic;
+        }
+
+        .advanced {
+            color: #1e3c72;
+            font-weight: 600;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .phrases-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .phrases-list li {
+            background: white;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .phrases-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .phrase-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+
+        .phrase-english {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .tips-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tips-title::before {
+            content: '💡';
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tips-list li {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tips-list li:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .tips-list li::before {
+            content: '✓';
+            margin-right: 10px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .advanced {
+                display: block;
+                margin-top: 5px;
+            }
+        }
+
+        .print-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .poster-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .print-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster-container">
+        <div class="header">
+            <h1>邹老师四六级翻译——翻译必考高分词汇表达总结</h1>
+            <div class="core-strategy">
+                <strong>核心策略</strong>：拒绝平庸词汇（Basic），尽量使用高级词汇（Advanced）以提升译文档次。
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 数词类 -->
+            <div class="section">
+                <div class="section-title">一、数词类 (Quantifiers)</div>
+                <div class="section-desc">用于描述数量、程度，避免通篇使用 "many" 或 "some"。</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>中文</th>
+                            <th>基础表达</th>
+                            <th>高级加分表达 (CET-6)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="chinese">大量的</td><td class="basic">a lot of / many</td><td class="advanced">a vast amount of / a multitude of / numerous / massive</td></tr>
+                        <tr><td class="chinese">一些</td><td class="basic">some</td><td class="advanced">several / a couple of</td></tr>
+                        <tr><td class="chinese">大多数</td><td class="basic">most</td><td class="advanced">the majority of / a great many</td></tr>
+                        <tr><td class="chinese">少部分</td><td class="basic">few / little</td><td class="advanced">a minority of / a handful of</td></tr>
+                        <tr><td class="chinese">一系列</td><td class="basic">a series of</td><td class="advanced">a sequence of / an array of</td></tr>
+                        <tr><td class="chinese">各种</td><td class="basic">all kinds of</td><td class="advanced">a variety of / diverse / various</td></tr>
+                        <tr><td class="chinese">大约</td><td class="basic">about</td><td class="advanced">approximately / roughly</td></tr>
+                        <tr><td class="chinese">多/余/超过</td><td class="basic">more than</td><td class="advanced">exceed / over / upwards of</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 形容词类 -->
+            <div class="section">
+                <div class="section-title">二、形容词类 (Adjectives)</div>
+                <div class="section-desc">形容词决定了句子的文采，是文化类翻译的重点。</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>中文</th>
+                            <th>基础表达</th>
+                            <th>高级加分表达 (CET-6)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="chinese">传统的</td><td class="basic">traditional</td><td class="advanced">conventional / classical</td></tr>
+                        <tr><td class="chinese">重要的</td><td class="basic">important</td><td class="advanced">significant / crucial / vital / essential</td></tr>
+                        <tr><td class="chinese">快速的</td><td class="basic">fast / quick</td><td class="advanced">rapid / swift</td></tr>
+                        <tr><td class="chinese">繁荣的</td><td class="basic">rich</td><td class="advanced">prosperous / booming / flourishing</td></tr>
+                        <tr><td class="chinese">稳定的</td><td class="basic">stable</td><td class="advanced">steady / consistent</td></tr>
+                        <tr><td class="chinese">广泛的</td><td class="basic">wide</td><td class="advanced">extensive / widespread</td></tr>
+                        <tr><td class="chinese">精致的</td><td class="basic">fine</td><td class="advanced">exquisite / delicate / sophisticated</td></tr>
+                        <tr><td class="chinese">宝贵的</td><td class="basic">valuable</td><td class="advanced">precious / invaluable</td></tr>
+                        <tr><td class="chinese">标志/象征性的</td><td class="basic">symbolic</td><td class="advanced">iconic / emblematic</td></tr>
+                        <tr><td class="chinese">简洁的</td><td class="basic">simple / short</td><td class="advanced">concise / brief</td></tr>
+                        <tr><td class="chinese">巧妙的</td><td class="basic">clever</td><td class="advanced">ingenious</td></tr>
+                        <tr><td class="chinese">悠久的</td><td class="basic">long</td><td class="advanced">long-standing / time-honored</td></tr>
+                        <tr><td class="chinese">深厚的</td><td class="basic">deep</td><td class="advanced">profound</td></tr>
+                        <tr><td class="chinese">现代的</td><td class="basic">modern</td><td class="advanced">contemporary</td></tr>
+                        <tr><td class="chinese">丰富的</td><td class="basic">rich</td><td class="advanced">abundant / plentiful</td></tr>
+                        <tr><td class="chinese">著名的</td><td class="basic">famous</td><td class="advanced">renowned / well-known / celebrated</td></tr>
+                        <tr><td class="chinese">古老的</td><td class="basic">old</td><td class="advanced">ancient</td></tr>
+                        <tr><td class="chinese">独特的</td><td class="basic">unique</td><td class="advanced">distinctive / characteristic</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 名词类 -->
+            <div class="section">
+                <div class="section-title">三、名词类 (Nouns)</div>
+                <div class="section-desc">名词准确性直接影响句子的核心含义。</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>中文</th>
+                            <th>基础表达</th>
+                            <th>高级加分表达 (CET-6)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="chinese">人们</td><td class="basic">people</td><td class="advanced">individuals / the public / citizens</td></tr>
+                        <tr><td class="chinese">发展</td><td class="basic">development</td><td class="advanced">advancement / progress</td></tr>
+                        <tr><td class="chinese">全球</td><td class="basic">world</td><td class="advanced">the globe / worldwide</td></tr>
+                        <tr><td class="chinese">全国</td><td class="basic">all over the country</td><td class="advanced">nationwide / throughout the country</td></tr>
+                        <tr><td class="chinese">影响</td><td class="basic">influence</td><td class="advanced">impact / effect</td></tr>
+                        <tr><td class="chinese">期望/期盼</td><td class="basic">hope</td><td class="advanced">expectation / anticipation</td></tr>
+                        <tr><td class="chinese">组成部分</td><td class="basic">part</td><td class="advanced">component / constituent</td></tr>
+                        <tr><td class="chinese">特点/特色</td><td class="basic">feature</td><td class="advanced">characteristic / trait</td></tr>
+                        <tr><td class="chinese">成就</td><td class="basic">success</td><td class="advanced">achievement / accomplishment</td></tr>
+                        <tr><td class="chinese">魅力</td><td class="basic">charm</td><td class="advanced">glamour / fascination / appeal</td></tr>
+                        <tr><td class="chinese">方面</td><td class="basic">aspect</td><td class="advanced">facet / respect</td></tr>
+                        <tr><td class="chinese">地位</td><td class="basic">position</td><td class="advanced">status / standing</td></tr>
+                        <tr><td class="chinese">各地</td><td class="basic">everywhere</td><td class="advanced">various places / every corner of...</td></tr>
+                        <tr><td class="chinese">地区/区域</td><td class="basic">area</td><td class="advanced">region / district / zone</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 动词类 -->
+            <div class="section">
+                <div class="section-title">四、动词类 (Verbs)</div>
+                <div class="section-desc">动词是句子的灵魂，六级翻译尤其喜欢考查"体现"、"象征"、"促进"等词。</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>中文</th>
+                            <th>基础表达</th>
+                            <th>高级加分表达 (CET-6)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="chinese">是</td><td class="basic">is / are</td><td class="advanced">serve as / act as / constitute</td></tr>
+                        <tr><td class="chinese">有</td><td class="basic">have</td><td class="advanced">possess / own / boast</td></tr>
+                        <tr><td class="chinese">承载</td><td class="basic">carry</td><td class="advanced">bear / sustain</td></tr>
+                        <tr><td class="chinese">体现</td><td class="basic">show</td><td class="advanced">reflect / embody / manifest</td></tr>
+                        <tr><td class="chinese">成为</td><td class="basic">become</td><td class="advanced">turn into / evolve into</td></tr>
+                        <tr><td class="chinese">使...</td><td class="basic">make</td><td class="advanced">enable / allow / empower</td></tr>
+                        <tr><td class="chinese">建造</td><td class="basic">build</td><td class="advanced">construct / establish</td></tr>
+                        <tr><td class="chinese">传承</td><td class="basic">pass down</td><td class="advanced">inherit</td></tr>
+                        <tr><td class="chinese">发展</td><td class="basic">develop</td><td class="advanced">promote / advance / cultivate</td></tr>
+                        <tr><td class="chinese">喜爱</td><td class="basic">like</td><td class="advanced">appreciate / adore / be fond of</td></tr>
+                        <tr><td class="chinese">吸引</td><td class="basic">attract</td><td class="advanced">appeal to / draw</td></tr>
+                        <tr><td class="chinese">减少</td><td class="basic">reduce</td><td class="advanced">decrease / diminish / lessen</td></tr>
+                        <tr><td class="chinese">象征</td><td class="basic">symbol</td><td class="advanced">symbolize / signify / stand for</td></tr>
+                        <tr><td class="chinese">影响</td><td class="basic">influence</td><td class="advanced">affect / impact</td></tr>
+                        <tr><td class="chinese">促进</td><td class="basic">help</td><td class="advanced">promote / facilitate / boost / foster</td></tr>
+                        <tr><td class="chinese">积累</td><td class="basic">gather</td><td class="advanced">accumulate / amass</td></tr>
+                        <tr><td class="chinese">形成</td><td class="basic">form</td><td class="advanced">take shape / come into being</td></tr>
+                        <tr><td class="chinese">传递</td><td class="basic">pass</td><td class="advanced">convey / deliver / transmit</td></tr>
+                        <tr><td class="chinese">涵盖</td><td class="basic">cover</td><td class="advanced">encompass / include</td></tr>
+                        <tr><td class="chinese">坐落于</td><td class="basic">be located in</td><td class="advanced">be situated in / lie in</td></tr>
+                        <tr><td class="chinese">追溯到</td><td class="basic">date back to</td><td class="advanced">trace back to</td></tr>
+                        <tr><td class="chinese">蕴含</td><td class="basic">contain</td><td class="advanced">imply / embody</td></tr>
+                        <tr><td class="chinese">起源于</td><td class="basic">come from</td><td class="advanced">originate from / stem from</td></tr>
+                        <tr><td class="chinese">突破</td><td class="basic">break</td><td class="advanced">break through / make a breakthrough</td></tr>
+                        <tr><td class="chinese">保护</td><td class="basic">protect</td><td class="advanced">preserve / conserve / safeguard</td></tr>
+                        <tr><td class="chinese">普及</td><td class="basic">spread</td><td class="advanced">popularize / disseminate</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 短语类 -->
+            <div class="section">
+                <div class="section-title">五、短语类 (Set Phrases)</div>
+                <div class="section-desc">这些短语是连接句子的骨架，也是六级翻译最常考的句型结构。</div>
+                <ul class="phrases-list">
+                    <li>
+                        <div class="phrase-title">1. 以...闻名</div>
+                        <div class="phrase-english">be famous/renowned for; be known as (作为...而闻名)</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">2. 被视为...</div>
+                        <div class="phrase-english">be regarded/considered/viewed/seen as</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">3. 与...紧密相关</div>
+                        <div class="phrase-english">be closely related/associated/connected with</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">4. 在...发挥重要作用</div>
+                        <div class="phrase-english">play a significant/vital/crucial role in...</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">5. 满足...的需求</div>
+                        <div class="phrase-english">meet/satisfy the needs/demands of...</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">6. 起源于...</div>
+                        <div class="phrase-english">originate from; have its origin in</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">7. 在...取得显著进步</div>
+                        <div class="phrase-english">make remarkable/significant progress in...</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">8. 加快...的步伐</div>
+                        <div class="phrase-english">accelerate the pace of...; speed up</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">9. 由...制成</div>
+                        <div class="phrase-english">be made of (物理变化); be made from (化学变化)</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">10. 由...组成</div>
+                        <div class="phrase-english">be composed of; consist of (无被动); be made up of</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">11. 富含...</div>
+                        <div class="phrase-english">be rich in; abound in</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">12. 努力...</div>
+                        <div class="phrase-english">make efforts to do; strive to do; endeavor to do</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">13. 旨在...</div>
+                        <div class="phrase-english">aim to do; be intended to do; with the aim of</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">14. 防止...</div>
+                        <div class="phrase-english">prevent ... from ...</div>
+                    </li>
+                    <li>
+                        <div class="phrase-title">15. 高度重视...</div>
+                        <div class="phrase-english">attach great importance to...; place a high value on...</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="tips-title">学习建议</div>
+            <ul class="tips-list">
+                <li><strong>语境记忆</strong>：不要死记硬背，尝试用这些高级词造句。例如，把 "China has a long history" 升级为 "China boasts a time-honored history"。</li>
+                <li><strong>词性转换</strong>：注意动词和名词的搭配。例如 "promote development" (促进发展), "make a breakthrough" (取得突破)。</li>
+                <li><strong>打印复习</strong>：建议将此文档打印或保存在手机中，考前一周重点复习"高级加分表达"一栏。</li>
+            </ul>
+        </div>
+    </div>
+
+    <button class="print-button" onclick="window.print()">🖨️ 打印海报</button>
+
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为表格行添加点击复制功能
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.style.cursor = 'pointer';
+                row.title = '点击复制高级表达';
+                row.addEventListener('click', function() {
+                    const advancedText = this.querySelector('.advanced').textContent;
+                    navigator.clipboard.writeText(advancedText).then(() => {
+                        // 创建临时提示
+                        const toast = document.createElement('div');
+                        toast.textContent = '已复制: ' + advancedText;
+                        toast.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: #4CAF50;
+                            color: white;
+                            padding: 15px 30px;
+                            border-radius: 8px;
+                            z-index: 10000;
+                            animation: fadeInOut 2s ease;
+                        `;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 2000);
+                    });
+                });
+            });
+
+            // 添加淡入淡出动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
