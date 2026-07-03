@@ -104,11 +104,12 @@
             card.innerHTML =
                 '<div class="para-head"><span class="para-no">第 ' + no + ' 段</span><span class="para-wc">~' + wc + ' 词</span></div>' +
                 '<div class="para-en">' + escapeHtml(p.en) + '</div>' +
+                '<div class="para-tools"><button type="button" class="btn btn-ghost btn-sm" id="helpbtn-' + no + '" onclick="toggleHelp(' + no + ')">📖 译文·词组·技巧</button></div>' +
+                '<div class="para-help hidden" id="help-' + no + '">' + buildHelp(p) + '</div>' +
                 '<div class="write-toolbar"><label class="field-label" style="margin:0">你的翻译</label></div>' +
                 '<textarea class="write-area para-tr" id="tr-' + no + '" placeholder="把本段译成中文…" oninput="state.translations[' + no + ']=this.value"></textarea>' +
                 '<div style="margin-top:10px"><button class="btn btn-orange btn-sm" id="evbtn-' + no + '" onclick="evaluatePara(' + no + ')">🔍 评价本段</button></div>' +
-                '<div class="para-feedback" id="fb-' + no + '"></div>' +
-                '<div class="para-reveal hidden" id="rev-' + no + '"></div>';
+                '<div class="para-feedback" id="fb-' + no + '"></div>';
             box.appendChild(card);
         });
     }
@@ -128,7 +129,7 @@
             state.feedback[no] = d.result || {};
             state.evaluated.add(no);
             renderFeedback(no, state.feedback[no], p);
-            revealReference(no, p);
+            expandHelp(no);
             btn.textContent = '✅ 已评价（重评）'; btn.disabled = false;
             updateProgress();
             toast('第 ' + no + ' 段纠错完成', 'ok');
@@ -167,12 +168,27 @@
             ${r.feedback ? '<div class="answer-explanation show"><div class="explanation-text"><b>提升建议：</b>' + escapeHtml(r.feedback) + '</div></div>' : ''}`;
     }
 
-    function revealReference(no, p) {
-        const rev = document.getElementById('rev-' + no);
+    function buildHelp(p) {
         const terms = (p.key_terms || []).map(t => `<li><b>${escapeHtml(t.en)}</b> — ${escapeHtml(t.cn)}</li>`).join('');
-        rev.innerHTML = '<div class="reference-box"><h4>📝 参考译文</h4>' + escapeHtml(p.reference || '') + '</div>'
-            + (terms ? '<div class="key-terms-box"><h5>🔑 本段重点词/短语</h5><ul>' + terms + '</ul></div>' : '');
-        rev.classList.remove('hidden');
+        const techs = (p.techniques || []).map(t => `<li>${escapeHtml(t)}</li>`).join('');
+        return '<div class="reference-box"><h4>📝 中文翻译</h4>' + escapeHtml(p.reference || '') + '</div>'
+            + (terms ? '<div class="key-terms-box"><h5>🔑 关键词和词组释义</h5><ul>' + terms + '</ul></div>' : '')
+            + (techs ? '<div class="cloze-notes"><h5>🧩 翻译技巧与难点</h5><ul>' + techs + '</ul></div>' : '');
+    }
+    function toggleHelp(no) {
+        const el = document.getElementById('help-' + no);
+        if (!el) return;
+        const hidden = el.classList.toggle('hidden');
+        const btn = document.getElementById('helpbtn-' + no);
+        if (btn) btn.textContent = hidden ? '📖 译文·词组·技巧' : '🙈 收起';
+    }
+    function expandHelp(no) {
+        const el = document.getElementById('help-' + no);
+        if (el && el.classList.contains('hidden')) {
+            el.classList.remove('hidden');
+            const btn = document.getElementById('helpbtn-' + no);
+            if (btn) btn.textContent = '🙈 收起';
+        }
     }
 
     function updateProgress() {

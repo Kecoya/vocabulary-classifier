@@ -220,6 +220,8 @@ def validate_article(d):
                 errs.append("paragraphs[%d].reference 缺失" % i)
             if not isinstance(p.get("key_terms"), list):
                 p["key_terms"] = []
+            if not isinstance(p.get("techniques"), list):
+                p["techniques"] = []
             p.setdefault("no", i + 1)
     if errs:
         raise ValueError("；".join(errs))

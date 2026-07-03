@@ -259,6 +259,8 @@
         .para-en { background:#f8f9fa; border-left:4px solid #5c6bc0; border-radius:8px; padding:14px 18px; line-height:1.9; font-size:15.5px; color:#2c3e50; margin-bottom:12px; white-space:pre-wrap; }
         .para-tr { min-height:110px; }
         .para-reveal { margin-top:8px; }
+        .para-tools { margin: 10px 0 4px; }
+        .para-help { margin: 6px 0 12px; }
 
         .fb-head { display:flex; gap:16px; align-items:center; margin:14px 0 10px; padding:12px 16px; background:linear-gradient(135deg,#eef2ff,#f5f0ff); border-radius:10px; }
         .score-ring.small { width:84px; height:84px; }
